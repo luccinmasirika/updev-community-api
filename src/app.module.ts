@@ -6,8 +6,9 @@ import { FilesModule } from './files/files.module';
 import { MailerModule } from './mailer/mailer.module';
 import { LoggerMiddleware } from './middleware/logger.middleware';
 import { PrismaModule } from './prisma/prisma.module';
-import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/users.module';
+import { PostsModule } from './posts/posts.module';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
@@ -26,9 +27,10 @@ import { UsersModule } from './users/users.module';
     PrismaModule,
     UsersModule,
     AuthModule,
-    RolesModule,
     FilesModule,
     MailerModule,
+    PostsModule,
+    TagsModule,
   ],
 })
 export class AppModule implements NestModule {

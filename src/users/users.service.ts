@@ -1,60 +1,48 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable
+} from '@nestjs/common';
 import * as bycrypt from 'bcryptjs';
-import { nanoid } from 'nanoid/async';
+import { MailerService } from 'src/mailer/mailer.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private mailerService: MailerService,
+  ) {}
 
   async register(createUserDto: CreateUserDto) {
-    const {
-      email,
-      password,
-      roles,
-      avatar,
-      firstName,
-      lastName,
-      phone,
-      sex,
-      promotion,
-    } = createUserDto;
+    const { email, password, firstName, lastName } = createUserDto;
     const hashedPassword = await this.hashPassword(password);
 
     await this.checkIfEmailIsNotUsed(email);
 
-    const confirmationCode = await nanoid();
-
-    const connectPromotion = {
-      promotion: {
-        connect: {
-          id: promotion,
-        },
-      },
-    };
+    const confirmationCode = Math.floor(1000 + Math.random() * 9000).toString();
 
     const user = await this.prisma.user.create({
       data: {
         email,
-        avatar: { connect: { id: avatar } },
         firstName,
         lastName,
-        phone,
-        sex,
         confirmationCode,
         password: hashedPassword,
-        ...connectPromotion,
-        roles: {
-          create: roles.map((role) => ({
-            ...connectPromotion,
-            role: {
-              connect: {
-                id: role,
-              },
-            },
-          })),
-        },
+        role: 'ADMIN',
+      },
+    });
+
+    this.mailerService.sendMail({
+      to: email,
+      from: 'Updev Community <support@updevcommunity.com>',
+      subject: 'Your confirmation code',
+      template: 'confirmation-code',
+      context: {
+        title: 'Hi, Your confirmation code is:',
+        code: confirmationCode,
+        siteLabel: 'Updev community',
+        siteLink: '/',
       },
     });
 
@@ -62,51 +50,22 @@ export class UsersService {
   }
 
   async findOneByEmail(email: string) {
-    const user = await this.prisma.user.findFirst({
+    return await this.prisma.user.findFirst({
       where: { email },
-      include: {
-        roles: { include: { role: true } },
-        avatar: true,
-        promotion: true,
-        students: {
-          where: {
-            user: {
-              email,
-            },
-          },
-          include: {
-            faculty: true,
-            level: true,
-          },
-        },
-      },
+      include: { profile: true },
     });
-
-    return {
-      ...user,
-      roles: user?.roles?.map((el) => el.role),
-      students: undefined,
-      student: user?.students[0],
-    };
   }
 
   async findOneById(id: string) {
     return await this.prisma.user.findUnique({
       where: { id },
+      include: { profile: true },
     });
   }
 
   async getUsers() {
     return await this.prisma.user.findMany({
-      include: {
-        roles: {
-          include: {
-            promotion: true,
-            role: true,
-          },
-        },
-        promotion: true,
-      },
+      include: { profile: true },
     });
   }
 
@@ -115,13 +74,17 @@ export class UsersService {
   }
 
   async activateAccount(code: string) {
-    return await this.prisma.user.update({
-      where: { confirmationCode: code },
-      data: {
-        accountStatus: 'ACTIVE',
-        confirmationCode: undefined,
-      },
-    });
+    try {
+      return await this.prisma.user.update({
+        where: { confirmationCode: code },
+        data: {
+          accountStatus: 'ACTIVE',
+          confirmationCode: null,
+        },
+      });
+    } catch (e) {
+      throw new ConflictException('Invalid confirmation code');
+    }
   }
 
   async activateUser(id: string) {
@@ -152,8 +115,8 @@ export class UsersService {
   }
 
   async checkIfEmailIsNotUsed(email: string) {
-    const isExistingUser = await this.prisma.user.findUnique({
-      where: { email },
+    const isExistingUser = await this.prisma.user.findFirst({
+      where: { email, confirmationCode: null },
     });
 
     if (isExistingUser) {

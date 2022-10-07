@@ -22,96 +22,145 @@ enum Sex {
   F
 }
 
+enum Role {
+  ADMIN
+  USER
+  AUTHOR
+}
+
+enum PostType {
+  ARTICLE
+  QUESTION
+}
+
 model User {
   id               String        @id @default(cuid())
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
-  avatar           Files?        @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  fileId           String?
   firstName        String
   lastName         String
   email            String        @unique
-  sex              Sex
-  phone            String
   password         String
   accountStatus    AccountStatus @default(PENDING)
-  confirmationCode String        @unique
-  roles            UserRole[]
+  confirmationCode String?       @unique
+  role             Role
+  profile          Profile?      @relation(fields: [profileId], references: [id])
+  profileId        String?
+  files            Files?        @relation(fields: [filesId], references: [id])
+  filesId          String?
+  posts            Post[]
 
   @@map("users")
 }
 
-model Resource {
-  id          String       @id @default(cuid())
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  name        String
-  description String?
-  permission  Permission[]
+model Profile {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  avatar    Files?   @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fileId    String?
+  bio       String?  @db.Text
+  website   String?
+  country   String
+  town      String
+  sex       Sex?
+  phone     Phone    @relation(fields: [phoneId], references: [id])
+  facebook  String?
+  twitter   String?
+  linkedIn  String?
+  gitHub    String?
+  phoneId   String
+  users     User[]
 
-  @@map("resources")
+  @@map("profiles")
 }
 
-model Permission {
-  id          String           @id @default(cuid())
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  designation String
-  description String?
-  roles       RolePermission[]
-  ressource   Resource         @relation(fields: [resourceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  resourceId  String
-
-  @@map("permissions")
+model Phone {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  code      String    @default("+243")
+  number    String?   @unique
+  profiles  Profile[]
 }
 
-model Role {
-  id          String           @id @default(cuid())
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  designation String
-  description String?
-  users       UserRole[]
-  permissions RolePermission[]
-
-  @@map("roles")
-}
-
-model UserRole {
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+model Post {
+  id          String     @id @default(cuid())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  title       String
+  content     String     @db.Text
+  type        PostType
+  slug        String     @unique
+  draft       Boolean    @default(false)
+  publishedOn DateTime   @default(now())
+  author      User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId      String
-  role        Role      @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  roleId      String
+  tags        PostTags[]
+  article     Article?   @relation(fields: [articleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  articleId   String?
+  question    Question?  @relation(fields: [questionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  questionId  String?
 
-  @@id([userId, roleId])
-  @@map("user_roles")
+  @@map("posts")
 }
 
-model RolePermission {
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  role         Role       @relation(fields: [roleId], references: [id])
-  roleId       String
-  permission   Permission @relation(fields: [permissionId], references: [id])
-  permissionId String
+model PostTags {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  postId    String
+  tag       Tags     @relation(fields: [tagId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tagId     String
 
-  @@id([roleId, permissionId])
-  @@map("role_permissions")
+  @@map("posts-tags")
+}
+
+model Tags {
+  id        String     @id @default(cuid())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  posts     PostTags[]
+  name      String
+
+  @@unique([name])
+  @@map("tags")
+}
+
+model Article {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  image     Files?   @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fileId    String?
+  posts     Post[]
+
+  @@map("articles")
+}
+
+model Question {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts     Post[]
+
+  @@map("questions")
 }
 
 model Files {
-  id         String       @id @default(cuid())
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  name       String
-  width      Int?
-  height     Int?
-  size       Int
-  mime       String
-  url        String
-  users      User[]
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  name      String
+  width     Int?
+  height    Int?
+  size      Int
+  mime      String
+  url       String
+  users     User[]
+  profiles  Profile[]
+  articles  Article[]
 
   @@map("files")
 }

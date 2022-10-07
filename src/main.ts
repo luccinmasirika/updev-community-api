@@ -17,7 +17,7 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
   app.setGlobalPrefix('api/v1');
-  app.useStaticAssets(join(__dirname, '..', 'uploads'));
+  app.useStaticAssets(join(__dirname, '/assets', 'uploads'));
 
   const config = new DocumentBuilder()
     .setTitle('Nestjs API Documentation')
@@ -25,7 +25,8 @@ async function bootstrap() {
     .setVersion('1.0.0')
     .addTag('Auth')
     .addTag('Users')
-    .addTag('Roles')
+    .addTag('Tags')
+    .addTag('Posts')
     .addTag('Mailer')
     .addTag('Files')
     .build();

@@ -1,8 +1,10 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Request,
   UseGuards,
@@ -37,13 +39,6 @@ export class AuthController {
 
   @Get('confirmation/:code')
   async confirmation(@Param('code') code: string) {
-    try {
-      const response = await this.userService.activateAccount(code);
-      console.log(response);
-      return 'Confirmation réussie';
-    } catch (error: any) {
-      console.log(error);
-      throw new BadRequestException(error?.response?.message);
-    }
+    return await this.userService.activateAccount(code);
   }
 }
