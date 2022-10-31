@@ -10,8 +10,11 @@ export class TagsService {
     return 'This action adds a new tag';
   }
 
-  async findAll() {
-    return await this.prisma.tags.findMany({ include: { _count: true } });
+  async findAll(name: string) {
+    return await this.prisma.tags.findMany({
+      where: { ...(name && { name: { contains: name } }) },
+      include: { _count: true },
+    });
   }
 
   findOne(id: number) {

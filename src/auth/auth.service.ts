@@ -62,10 +62,6 @@ export class AuthService {
       audience: process.env.GOOGLE_CLIENT_ID,
     });
     const payload = ticket.getPayload();
-    console.log(
-      '🚀 ~ file: auth.service.ts ~ line 65 ~ AuthService ~ googleLogin ~ payload',
-      payload,
-    );
     const user = await this.usersService.findOneByEmail(payload.email);
     if (user) {
       return this.login(user);
