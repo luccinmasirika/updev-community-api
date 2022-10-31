@@ -33,22 +33,51 @@ enum PostType {
   QUESTION
 }
 
+enum ArticleReactionType {
+  LIKE
+  LOVE
+  USEFUL
+}
+
+enum QuestionReactionType {
+  LIKE
+  DISLIKE
+}
+
+enum NotificationType {
+  COMMENT
+  REPLY
+  LIKE
+  DISLIKE
+  BOOKMARK
+  SHARE
+  FOLLOW
+  LOVE
+  USEFUL
+}
+
 model User {
-  id               String        @id @default(cuid())
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
-  firstName        String
-  lastName         String
-  email            String        @unique
-  password         String
-  accountStatus    AccountStatus @default(PENDING)
-  confirmationCode String?       @unique
-  role             Role
-  profile          Profile?      @relation(fields: [profileId], references: [id])
-  profileId        String?
-  files            Files?        @relation(fields: [filesId], references: [id])
-  filesId          String?
-  posts            Post[]
+  id                   String             @id @default(cuid())
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  firstName            String
+  lastName             String
+  email                String             @unique
+  password             String
+  accountStatus        AccountStatus      @default(ACTIVE)
+  confirmationCode     String?            @unique
+  role                 Role
+  profile              Profile?           @relation(fields: [profileId], references: [id])
+  profileId            String?
+  files                Files?             @relation(fields: [filesId], references: [id])
+  filesId              String?
+  posts                Post[]
+  comments             PostComment[]
+  articleReactions     ArticleReaction[]
+  bookmarks            PostBookmark[]
+  questionReactions    QuestionReaction[]
+  notificationToUser   Notification[]     @relation("NotificationToUser")
+  notificationFromUser Notification[]     @relation("NotificationFromUser")
 
   @@map("users")
 }
@@ -85,22 +114,25 @@ model Phone {
 }
 
 model Post {
-  id          String     @id @default(cuid())
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  title       String
-  content     String     @db.Text
-  type        PostType
-  slug        String     @unique
-  draft       Boolean    @default(false)
-  publishedOn DateTime   @default(now())
-  author      User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId      String
-  tags        PostTags[]
-  article     Article?   @relation(fields: [articleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  articleId   String?
-  question    Question?  @relation(fields: [questionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  questionId  String?
+  id            String         @id @default(cuid())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  title         String
+  content       String         @db.Text
+  type          PostType
+  slug          String         @unique
+  draft         Boolean        @default(false)
+  publishedOn   DateTime       @default(now())
+  author        User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId        String
+  tags          PostTags[]
+  article       Article?       @relation(fields: [articleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  articleId     String?
+  question      Question?      @relation(fields: [questionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  questionId    String?
+  comments      PostComment[]
+  bookmarks     PostBookmark[]
+  notifications Notification[]
 
   @@map("posts")
 }
@@ -117,6 +149,20 @@ model PostTags {
   @@map("posts-tags")
 }
 
+model PostComment {
+  id            String         @id @default(cuid())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  post          Post           @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  postId        String
+  content       String         @db.Text
+  author        User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId        String
+  notifications Notification[]
+
+  @@map("comments")
+}
+
 model Tags {
   id        String     @id @default(cuid())
   createdAt DateTime   @default(now())
@@ -129,23 +175,86 @@ model Tags {
 }
 
 model Article {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  image     Files?   @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  id        String            @id @default(cuid())
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  image     Files?            @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   fileId    String?
+  published Boolean           @default(true)
   posts     Post[]
+  reactions ArticleReaction[]
 
   @@map("articles")
 }
 
-model Question {
+model ArticleReaction {
+  id        String              @id @default(cuid())
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  article   Article             @relation(fields: [articleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  articleId String
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    String
+  type      ArticleReactionType
+
+  @@unique([articleId, userId])
+  @@map("article-reactions")
+}
+
+model QuestionReaction {
+  id         String               @id @default(cuid())
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+  question   Question             @relation(fields: [questionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  questionId String
+  user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId     String
+  type       QuestionReactionType
+
+  @@unique([questionId, userId])
+  @@map("question-reactions")
+}
+
+model PostBookmark {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    String
+
+  @@unique([postId, userId])
+  @@map("post-bookmarks")
+}
+
+model Question {
+  id        String             @id @default(cuid())
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  published Boolean            @default(true)
   posts     Post[]
+  reactions QuestionReaction[]
 
   @@map("questions")
+}
+
+model Notification {
+  id                   String           @id @default(cuid())
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  notificationToUser   User             @relation("NotificationToUser", fields: [toUserId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  toUserId             String
+  notificationFromUser User             @relation("NotificationFromUser", fields: [fromUserId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fromUserId           String
+  type                 NotificationType
+  post                 Post?            @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  postId               String?
+  comment              PostComment?     @relation(fields: [commentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  commentId            String?
+  read                 Boolean          @default(false)
+
+  @@map("notifications")
 }
 
 model Files {

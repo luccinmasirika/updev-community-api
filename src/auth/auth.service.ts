@@ -6,6 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bycrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
+const { OAuth2Client } = require('google-auth-library');
 
 @Injectable()
 export class AuthService {
@@ -48,5 +49,34 @@ export class AuthService {
       jwt: this.jwtService.sign(payload),
       user: profile,
     };
+  }
+
+  // register with google or login with google account if already registered
+  async googleLogin(token: string) {
+    const client = new OAuth2Client(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+    );
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    console.log(
+      '🚀 ~ file: auth.service.ts ~ line 65 ~ AuthService ~ googleLogin ~ payload',
+      payload,
+    );
+    const user = await this.usersService.findOneByEmail(payload.email);
+    if (user) {
+      return this.login(user);
+    } else {
+      const newUser = await this.usersService.register({
+        email: payload.email,
+        password: payload.sub,
+        firstName: payload.given_name,
+        lastName: payload.family_name,
+      });
+      return this.login(newUser);
+    }
   }
 }

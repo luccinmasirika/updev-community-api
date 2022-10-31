@@ -1,7 +1,4 @@
-import {
-  ConflictException,
-  Injectable
-} from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import * as bycrypt from 'bcryptjs';
 import { MailerService } from 'src/mailer/mailer.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -29,7 +26,7 @@ export class UsersService {
         lastName,
         confirmationCode,
         password: hashedPassword,
-        role: 'ADMIN',
+        role: 'USER',
       },
     });
 

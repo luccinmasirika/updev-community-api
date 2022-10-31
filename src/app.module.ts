@@ -9,6 +9,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { UsersModule } from './users/users.module';
 import { PostsModule } from './posts/posts.module';
 import { TagsModule } from './tags/tags.module';
+import { CommentsModule } from './comments/comments.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { TagsModule } from './tags/tags.module';
     MailerModule,
     PostsModule,
     TagsModule,
+    CommentsModule,
+    NotificationsModule,
   ],
 })
 export class AppModule implements NestModule {

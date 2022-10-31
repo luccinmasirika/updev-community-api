@@ -17,7 +17,7 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
   app.setGlobalPrefix('api/v1');
-  app.useStaticAssets(join(__dirname, '/assets', 'uploads'));
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), { prefix: '/assets' });
 
   const config = new DocumentBuilder()
     .setTitle('Nestjs API Documentation')

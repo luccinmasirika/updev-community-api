@@ -36,12 +36,4 @@ export class CreateUserDto {
   })
   password?: string;
 
-  @IsOptional()
-  @IsString({ each: true })
-  @ApiProperty({
-    type: Array,
-    format: 'string',
-    example: ['cl8lglo0h0000um5ww9n0q9rg'],
-  })
-  roles: string[];
 }

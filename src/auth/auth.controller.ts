@@ -29,6 +29,11 @@ export class AuthController {
     return await this.authService.login(req.user);
   }
 
+  @Post('google/login/:token')
+  async loginWithGoogle(@Param('token') token: string) {
+    return await this.authService.googleLogin(token);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('user')
   async getProfile(@Request() req) {
