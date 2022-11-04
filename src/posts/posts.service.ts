@@ -122,6 +122,7 @@ export class PostsService {
             tag: true,
           },
         },
+        bookmarks: true,
       },
     });
   }
@@ -192,6 +193,9 @@ export class PostsService {
         author: { include: { profile: { include: { avatar: true } } } },
         comments: true,
         bookmarks: true,
+        tags: {
+          include: { tag: true },
+        },
       },
     });
   }
@@ -431,6 +435,7 @@ export class PostsService {
         author: { include: { profile: { include: { avatar: true } } } },
         comments: true,
         bookmarks: true,
+        tags: { include: { tag: true } },
       },
     });
   }
@@ -526,6 +531,7 @@ export class PostsService {
         author: { include: { profile: { include: { avatar: true } } } },
         comments: true,
         bookmarks: true,
+        tags: { include: { tag: true } },
       },
     });
   }
