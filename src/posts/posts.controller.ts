@@ -39,14 +39,14 @@ export class PostsController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param() id: string) {
     return this.postsService.remove(id);
   }
 
   // get post by tag
-  @Get('tag/:tag')
-  getPostsByTag(@Param('tag') tag: string) {
-    return this.postsService.getPostsByTag(tag);
+  @Post('tags')
+  getPostsByTag(@Body() tags: string[]) {
+    return this.postsService.getPostsByTags(tags);
   }
 
   // get post by author
@@ -56,9 +56,15 @@ export class PostsController {
   }
 
   // get top posts of the week
+  @Get('top/posts-week')
+  getTopPostsOfTheWeek() {
+    return this.postsService.getTopPostsOfTheWeek();
+  }
+
+  // get top posts
   @Get('top/posts')
   getTopPosts() {
-    return this.postsService.getTopPostsOfTheWeek();
+    return this.postsService.getTopPosts();
   }
 
   // get top authors

@@ -41,9 +41,4 @@ export class AuthController {
     delete user.password;
     return user;
   }
-
-  @Get('confirmation/:code')
-  async confirmation(@Param('code') code: string) {
-    return await this.userService.activateAccount(code);
-  }
 }

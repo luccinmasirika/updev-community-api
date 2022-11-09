@@ -65,7 +65,6 @@ model User {
   email                String             @unique
   password             String
   accountStatus        AccountStatus      @default(ACTIVE)
-  confirmationCode     String?            @unique
   role                 Role
   profile              Profile?           @relation(fields: [profileId], references: [id])
   profileId            String?
@@ -90,28 +89,28 @@ model Profile {
   fileId    String?
   bio       String?  @db.Text
   website   String?
-  country   String
-  town      String
+  country   String?
+  town      String?
   sex       Sex?
-  phone     Phone    @relation(fields: [phoneId], references: [id])
+  phone     String?
   facebook  String?
   twitter   String?
   linkedIn  String?
   gitHub    String?
-  phoneId   String
+  job       String
   users     User[]
 
   @@map("profiles")
 }
 
-model Phone {
-  id        String    @id @default(cuid())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  code      String    @default("+243")
-  number    String?   @unique
-  profiles  Profile[]
-}
+// model Phone {
+//   id        String    @id @default(cuid())
+//   createdAt DateTime  @default(now())
+//   updatedAt DateTime  @updatedAt
+//   code      String    @default("+243")
+//   number    String?   @unique
+//   profiles  Profile[]
+// }
 
 model Post {
   id            String         @id @default(cuid())

@@ -239,18 +239,22 @@ export class PostsService {
     return this.createSlug(`${title}-${Math.floor(Math.random() * 9 + 1)}`);
   }
 
-  async getPostsByTag(tag: string) {
+  async getPostsByTags(tags: string[]) {
+    console.log('tags', tags)
     return await this.prisma.post.findMany({
       orderBy: [{ createdAt: 'desc' }],
       where: {
         tags: {
           some: {
-            tag: {
-              name: tag,
-            },
+            OR: tags.map((el) => ({
+              tag: {
+                name: el,
+              },
+            })),
           },
         },
       },
+
       include: {
         article: {
           include: { image: true, reactions: { include: { user: true } } },
@@ -340,6 +344,41 @@ export class PostsService {
       .slice(0, 3);
 
     return { topQuestionsOfTheWeek, topArticlesOfTheWeek };
+  }
+
+  async getTopPosts() {
+    const posts = await this.prisma.post.findMany({
+      include: {
+        author: {
+          include: {
+            profile: {
+              include: {
+                avatar: true,
+              },
+            },
+          },
+        },
+        article: {
+          include: { image: true, reactions: { include: { user: true } } },
+        },
+        question: { include: { reactions: { include: { user: true } } } },
+      },
+    });
+
+    const topPosts = posts
+      .map((el) =>
+        el.type === 'ARTICLE'
+          ? { ...el, reactions: el.article.reactions.length }
+          : {
+              ...el,
+              reactions: el.question.reactions.filter(
+                (reaction) => reaction.type !== 'DISLIKE',
+              ).length,
+            },
+      )
+      .sort((a, b) => b.reactions - a.reactions);
+
+    return topPosts;
   }
 
   async reactToArticlePost(

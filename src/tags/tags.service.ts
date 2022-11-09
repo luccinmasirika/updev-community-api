@@ -7,7 +7,7 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 export class TagsService {
   constructor(private prisma: PrismaService) {}
   create(createTagDto: CreateTagDto) {
-    return 'This action adds a new tag';
+    return this.prisma.tags.create({data: {name: createTagDto.name}})
   }
 
   async findAll(name: string) {

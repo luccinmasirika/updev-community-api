@@ -44,7 +44,6 @@ export class AuthService {
     const payload = { email: user?.email, password: user?.password };
     const profile = await this.usersService.findOneByEmail(payload.email);
     delete profile.password;
-    delete profile.confirmationCode;
     return {
       jwt: this.jwtService.sign(payload),
       user: profile,
