@@ -89,6 +89,20 @@ export class UsersService {
     });
   }
 
+  async getUserByEmail(email: string) {
+    return await this.prisma.user.findUnique({
+      where: { email },
+      include: {
+        profile: { include: { avatar: true } },
+        posts: {
+          orderBy: { createdAt: 'desc' },
+          include: { article: { include: { image: true } } },
+        },
+        comments: { orderBy: { createdAt: 'desc' } },
+      },
+    });
+  }
+
   async hashPassword(pwd: string) {
     return await bycrypt.hash(pwd, 10);
   }
