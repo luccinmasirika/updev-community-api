@@ -18,6 +18,11 @@ export class NotificationsController {
     return this.notificationsService.findAll(id);
   }
 
+  @Get(':id/count')
+  getCount(@Param('id') id: string) {
+    return this.notificationsService.getNotificationsCount(id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string) {
     return this.notificationsService.readNotification(id);

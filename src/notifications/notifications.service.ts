@@ -35,7 +35,7 @@ export class NotificationsService {
   }
 
   async findAll(toUserId: string) {
-    return await this.prisma.notification.findMany({
+    const notifications = await this.prisma.notification.findMany({
       orderBy: [{ createdAt: 'desc' }],
       where: {
         notificationToUser: {
@@ -77,6 +77,35 @@ export class NotificationsService {
             },
           },
         },
+      },
+    });
+
+    const acc = notifications.reduce((acc, notification) => {
+      const date = new Date(notification.createdAt).toDateString();
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(notification);
+      return acc;
+    }, {});
+
+    const groups = Object.keys(acc).map((date) => {
+      return {
+        date,
+        notifications: acc[date],
+      };
+    });
+
+    return groups;
+  }
+
+  async getNotificationsCount(toUserId: string) {
+    return await this.prisma.notification.count({
+      where: {
+        notificationToUser: {
+          id: toUserId,
+        },
+        read: false,
       },
     });
   }

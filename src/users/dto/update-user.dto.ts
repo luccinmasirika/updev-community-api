@@ -6,7 +6,7 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   phone: string;
   bio: string;
   linkedIn: string;
-  github: string;
+  gitHub: string;
   twitter: string;
   job: string;
 }

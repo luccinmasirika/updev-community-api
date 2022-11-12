@@ -57,7 +57,7 @@ export class CommentsService {
         },
       },
       include: {
-        author: true,
+        author: { include: { profile: { include: { avatar: true } } } },
       },
     });
   }
