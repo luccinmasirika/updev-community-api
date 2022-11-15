@@ -99,7 +99,7 @@ model Profile {
   twitter   String?
   linkedIn  String?
   gitHub    String?
-  job       String
+  job       String?
   users     User[]
 
   @@map("profiles")

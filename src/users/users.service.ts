@@ -31,42 +31,41 @@ export class UsersService {
   }
 
   async updateUser(id: string, updateUserDto: UpdateUserDto) {
+    const {
+      avatar,
+      firstName,
+      lastName,
+      bio,
+      gitHub,
+      job,
+      linkedIn,
+      phone,
+      twitter,
+    } = updateUserDto;
     return this.prisma.user.update({
       where: { id },
       data: {
-        firstName: updateUserDto.firstName,
-        lastName: updateUserDto.lastName,
+        firstName,
+        lastName,
         profile: {
           upsert: {
             create: {
-              ...(updateUserDto.avatar && {
-                avatar: {
-                  connect: {
-                    id: updateUserDto.avatar,
-                  },
-                },
-              }),
-              bio: updateUserDto.bio,
-              gitHub: updateUserDto.gitHub,
-              twitter: updateUserDto.twitter,
-              linkedIn: updateUserDto.linkedIn,
-              job: updateUserDto.job,
-              phone: updateUserDto.phone,
+              ...(avatar && { avatar: { connect: { id: avatar } } }),
+              bio,
+              gitHub,
+              job,
+              linkedIn,
+              phone,
+              twitter,
             },
             update: {
-              ...(updateUserDto.avatar && {
-                avatar: {
-                  connect: {
-                    id: updateUserDto.avatar,
-                  },
-                },
-              }),
-              bio: updateUserDto.bio,
-              gitHub: updateUserDto.gitHub,
-              twitter: updateUserDto.twitter,
-              linkedIn: updateUserDto.linkedIn,
-              job: updateUserDto.job,
-              phone: updateUserDto.phone,
+              ...(avatar && { avatar: { connect: { id: avatar } } }),
+              bio,
+              gitHub,
+              job,
+              linkedIn,
+              phone,
+              twitter,
             },
           },
         },
