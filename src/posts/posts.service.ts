@@ -72,12 +72,71 @@ export class PostsService {
     return post;
   }
 
+  // update post
+  async updatePost(id: string, data: UpdatePostDto) {
+    const { title, content, tags, image } = data;
+    const post = await this.prisma.post.findUnique({
+      where: { id },
+      include: {
+        article: true,
+        question: true,
+      },
+    });
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    const slug = await this.createSlug(title);
+
+    const updatedPost = await this.prisma.post.update({
+      where: { id },
+      data: {
+        slug,
+        title,
+        content,
+        tags: {
+          create: tags.map((el) => ({
+            tag: {
+              connectOrCreate: {
+                where: {
+                  name: el,
+                },
+                create: {
+                  name: el,
+                },
+              },
+            },
+          })),
+        },
+        ...(image
+          ? {
+              article: {
+                update: {
+                  image: { connect: { id: image } },
+                },
+              },
+            }
+          : {}),
+      },
+    });
+
+    return updatedPost;
+  }
+
   async findAll() {
     return await this.prisma.post.findMany({
       orderBy: [{ createdAt: 'desc' }],
       include: {
         article: {
-          include: { image: true, reactions: { include: { user: true } } },
+          include: {
+            image: true,
+            reactions: {
+              include: {
+                user: { include: { profile: { include: { avatar: true } } } },
+              },
+            },
+          },
         },
         author: {
           include: {
@@ -88,7 +147,15 @@ export class PostsService {
             },
           },
         },
-        question: { include: { reactions: { include: { user: true } } } },
+        question: {
+          include: {
+            reactions: {
+              include: {
+                user: { include: { profile: { include: { avatar: true } } } },
+              },
+            },
+          },
+        },
         tags: {
           include: {
             tag: true,
@@ -105,7 +172,14 @@ export class PostsService {
       where: { slug },
       include: {
         article: {
-          include: { image: true, reactions: { include: { user: true } } },
+          include: {
+            image: true,
+            reactions: {
+              include: {
+                user: { include: { profile: { include: { avatar: true } } } },
+              },
+            },
+          },
         },
         author: {
           include: {
@@ -116,7 +190,15 @@ export class PostsService {
             },
           },
         },
-        question: { include: { reactions: { include: { user: true } } } },
+        question: {
+          include: {
+            reactions: {
+              include: {
+                user: { include: { profile: { include: { avatar: true } } } },
+              },
+            },
+          },
+        },
         tags: {
           include: {
             tag: true,
@@ -240,7 +322,6 @@ export class PostsService {
   }
 
   async getPostsByTags(tags: string[]) {
-    console.log('tags', tags)
     return await this.prisma.post.findMany({
       orderBy: [{ createdAt: 'desc' }],
       where: {
@@ -257,7 +338,14 @@ export class PostsService {
 
       include: {
         article: {
-          include: { image: true, reactions: { include: { user: true } } },
+          include: {
+            image: true,
+            reactions: {
+              include: {
+                user: { include: { profile: { include: { avatar: true } } } },
+              },
+            },
+          },
         },
         author: {
           include: {
@@ -268,7 +356,15 @@ export class PostsService {
             },
           },
         },
-        question: { include: { reactions: { include: { user: true } } } },
+        question: {
+          include: {
+            reactions: {
+              include: {
+                user: { include: { profile: { include: { avatar: true } } } },
+              },
+            },
+          },
+        },
         tags: {
           include: {
             tag: true,
@@ -288,7 +384,14 @@ export class PostsService {
       },
       include: {
         article: {
-          include: { image: true, reactions: { include: { user: true } } },
+          include: {
+            image: true,
+            reactions: {
+              include: {
+                user: { include: { profile: { include: { avatar: true } } } },
+              },
+            },
+          },
         },
         author: {
           include: {
@@ -299,7 +402,15 @@ export class PostsService {
             },
           },
         },
-        question: { include: { reactions: { include: { user: true } } } },
+        question: {
+          include: {
+            reactions: {
+              include: {
+                user: { include: { profile: { include: { avatar: true } } } },
+              },
+            },
+          },
+        },
         tags: {
           include: {
             tag: true,
@@ -580,9 +691,24 @@ export class PostsService {
       where: { id: postId },
       include: {
         article: {
-          include: { image: true, reactions: { include: { user: true } } },
+          include: {
+            image: true,
+            reactions: {
+              include: {
+                user: { include: { profile: { include: { avatar: true } } } },
+              },
+            },
+          },
         },
-        question: { include: { reactions: { include: { user: true } } } },
+        question: {
+          include: {
+            reactions: {
+              include: {
+                user: { include: { profile: { include: { avatar: true } } } },
+              },
+            },
+          },
+        },
       },
     });
 

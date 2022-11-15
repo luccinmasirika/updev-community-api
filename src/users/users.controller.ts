@@ -19,14 +19,19 @@ export class UsersController {
     return this.usersService.getUsers();
   }
 
-  @Get(':email')
-  async getUserByEmail(@Param('email') email: string) {
-    return this.usersService.getUserByEmail(email);
+  @Get(':username')
+  async getUserByEmail(@Param('username') username: string) {
+    return this.usersService.getUserByUsername(username);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.updateUser(id, updateUserDto);
+  }
+
+  @Patch()
+  updateUserName() {
+    return this.usersService.updateAllUsernames();
   }
 
   @Patch(':id/disable')
