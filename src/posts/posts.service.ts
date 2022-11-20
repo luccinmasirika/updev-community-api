@@ -80,6 +80,7 @@ export class PostsService {
       include: {
         article: true,
         question: true,
+        tags: { include: { tag: true } },
       },
     });
 
@@ -96,6 +97,7 @@ export class PostsService {
         title,
         content,
         tags: {
+          deleteMany: {},
           create: tags.map((el) => ({
             tag: {
               connectOrCreate: {
