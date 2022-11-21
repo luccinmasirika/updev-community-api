@@ -11,6 +11,7 @@ import slugify from 'slugify';
 import {
   ArticleReactionType,
   NotificationType,
+  Post,
   QuestionReactionType,
 } from '@prisma/client';
 import { NotificationsService } from 'src/notifications/notifications.service';
@@ -88,7 +89,7 @@ export class PostsService {
       throw new NotFoundException('Post not found');
     }
 
-    const slug = await this.createSlug(title);
+    const slug = await this.updateSlug(title, post);
 
     const updatedPost = await this.prisma.post.update({
       where: { id },
@@ -321,6 +322,18 @@ export class PostsService {
       return slug;
     }
     return this.createSlug(`${title}-${Math.floor(Math.random() * 9 + 1)}`);
+  }
+
+  async updateSlug(title: string, post: Post) {
+    const slug = slugify(title, { lower: true });
+    if (slug !== post.slug) {
+      const post = await this.prisma.post.findUnique({ where: { slug } });
+      if (!post) {
+        return slug;
+      }
+      return this.createSlug(`${title}-${Math.floor(Math.random() * 9 + 1)}`);
+    }
+    return slug;
   }
 
   async getPostsByTags(tags: string[]) {

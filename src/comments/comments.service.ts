@@ -107,6 +107,7 @@ export class CommentsService {
         post: {
           select: {
             slug: true,
+            type: true,
           },
         },
       },
