@@ -49,6 +49,7 @@ export class NotificationsService {
               select: {
                 slug: true,
                 title: true,
+                type: true,
               },
             },
           },
@@ -57,6 +58,7 @@ export class NotificationsService {
           select: {
             slug: true,
             title: true,
+            type: true,
           },
         },
         notificationFromUser: {
