@@ -28,7 +28,10 @@ export class CommentsService {
           },
         },
       },
-      include: { author: true, post: true },
+      include: {
+        author: { include: { profile: { include: { avatar: true } } } },
+        post: true,
+      },
     });
 
     // push notification
