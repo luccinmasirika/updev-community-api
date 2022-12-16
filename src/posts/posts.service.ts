@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import slugify from 'slugify';
@@ -14,7 +14,7 @@ import {
   Post,
   QuestionReactionType,
 } from '@prisma/client';
-import { NotificationsService } from 'src/notifications/notifications.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class PostsService {
@@ -26,57 +26,48 @@ export class PostsService {
     const { title, content, author, tags, type, image } = createPostDto;
 
     const slug = await this.createSlug(title);
-    const post = await this.prisma.post.create({
-      data: {
-        slug,
-        title,
-        content,
-        type,
-        author: {
-          connect: {
-            id: author,
-          },
-        },
-        tags: {
-          create: tags.map((el) => ({
-            tag: {
-              connectOrCreate: {
-                where: {
-                  name: el,
-                },
-                create: {
-                  name: el,
-                },
-              },
+    const postData = {
+      slug,
+      title,
+      content,
+      type,
+      author: { connect: { id: author } },
+      tags: {
+        create: tags.map((tag) => ({
+          tag: {
+            connectOrCreate: {
+              where: { name: tag },
+              create: { name: tag },
             },
-          })),
-        },
-        ...(image
-          ? {
-              article: {
-                create: {
-                  image: { connect: { id: image } },
-                  published: true,
-                },
-              },
-            }
-          : {
-              question: {
-                create: {
-                  published: true,
-                },
-              },
-            }),
+          },
+        })),
       },
+      article: undefined,
+      question: undefined,
+    };
+    if (image) {
+      postData.article = {
+        create: {
+          image: { connect: { id: image } },
+          published: true,
+        },
+      };
+    } else {
+      postData.question = {
+        create: { published: true },
+      };
+    }
+
+    const post = await this.prisma.post.create({
+      data: postData,
     });
 
     return post;
   }
 
-  // update post
   async updatePost(id: string, data: UpdatePostDto) {
     const { title, content, tags, image } = data;
-    const post = await this.prisma.post.findUnique({
+    const post = await this.prisma.post.findFirst({
       where: { id },
       include: {
         article: true,
@@ -90,122 +81,149 @@ export class PostsService {
     }
 
     const slug = await this.updateSlug(title, post);
+    const updateData = {
+      slug,
+      title,
+      content,
+      tags: {
+        deleteMany: {},
+        create: tags.map((tag) => ({
+          tag: {
+            connectOrCreate: {
+              where: { name: tag },
+              create: { name: tag },
+            },
+          },
+        })),
+      },
+      article: undefined,
+    };
+    if (image) {
+      updateData.article = {
+        update: { image: { connect: { id: image } } },
+      };
+    }
 
     const updatedPost = await this.prisma.post.update({
       where: { id },
-      data: {
-        slug,
-        title,
-        content,
-        tags: {
-          deleteMany: {},
-          create: tags.map((el) => ({
-            tag: {
-              connectOrCreate: {
-                where: {
-                  name: el,
-                },
-                create: {
-                  name: el,
-                },
-              },
-            },
-          })),
-        },
-        ...(image
-          ? {
-              article: {
-                update: {
-                  image: { connect: { id: image } },
-                },
-              },
-            }
-          : {}),
-      },
+      data: updateData,
     });
 
     return updatedPost;
   }
 
-  async findAll() {
+  async findAll(
+    page: number,
+    perPage: number,
+    search?: string,
+    filters?: {
+      type?: 'ARTICLE' | 'QUESTION';
+      tagNames?: string[];
+      userId?: string;
+      draft: boolean;
+      dateRange?: {
+        startDate: string;
+        endDate: string;
+      };
+    },
+  ) {
+    const pagination = {
+      take: perPage,
+      skip: (page - 1) * perPage,
+    };
+
+    let filter = {
+      AND: [
+        filters?.type && { type: filters.type },
+        filters?.tagNames &&
+          filters.tagNames.length > 0 && {
+            tags: { some: { tag: { id: { in: filters.tagNames } } } },
+          },
+        filters?.userId && { author: { id: filters.userId } },
+        filters?.draft && { draft: filters?.draft },
+        filters?.dateRange && {
+          createdAt: {
+            gte: filters.dateRange.startDate,
+            lte: filters.dateRange.endDate,
+          },
+        },
+        search && {
+          OR: [
+            { title: { contains: search } },
+            { content: { contains: search } },
+            { tags: { some: { tag: { name: { contains: search } } } } },
+          ],
+        },
+      ],
+    };
+
+    const author = {
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        profile: { select: { avatar: { select: { url: true } } } },
+      },
+    };
+
+    const reactions = {
+      select: {
+        user: author,
+        type: true,
+      },
+    };
+
     return await this.prisma.post.findMany({
       orderBy: [{ createdAt: 'desc' }],
+      ...pagination,
+      where: filter,
       include: {
         article: {
-          include: {
-            image: true,
-            reactions: {
-              include: {
-                user: { include: { profile: { include: { avatar: true } } } },
-              },
-            },
+          select: {
+            image: { select: { url: true } },
+            reactions,
           },
         },
-        author: {
-          include: {
-            profile: {
-              include: {
-                avatar: true,
-              },
-            },
-          },
-        },
+        author,
         question: {
-          include: {
-            reactions: {
-              include: {
-                user: { include: { profile: { include: { avatar: true } } } },
-              },
-            },
+          select: {
+            reactions,
           },
         },
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
+        tags: { select: { tag: { select: { name: true } } } },
         comments: true,
         bookmarks: true,
       },
     });
   }
 
-  async getPostBySlug(slug: string) {
+  async getPostBySlug(slug: string, userId: string) {
+    const author = {
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        profile: { select: { avatar: { select: { url: true } } } },
+      },
+    };
+
+    const reactions = {
+      select: {
+        user: author,
+        type: true,
+      },
+    };
+
     return await this.prisma.post.findUnique({
       where: { slug },
       include: {
         article: {
-          include: {
-            image: true,
-            reactions: {
-              include: {
-                user: { include: { profile: { include: { avatar: true } } } },
-              },
-            },
-          },
+          select: { reactions, image: { select: { url: true } } },
         },
-        author: {
-          include: {
-            profile: {
-              include: {
-                avatar: true,
-              },
-            },
-          },
-        },
-        question: {
-          include: {
-            reactions: {
-              include: {
-                user: { include: { profile: { include: { avatar: true } } } },
-              },
-            },
-          },
-        },
+        author,
+        question: { select: { reactions } },
         tags: {
-          include: {
-            tag: true,
-          },
+          select: { tag: { select: { name: true } } },
         },
         bookmarks: true,
       },
@@ -285,30 +303,35 @@ export class PostsService {
     });
   }
 
-  async getBookmarks(userId: string) {
+  async getBookmarks(userId: string, page: number, perPage: number) {
+    const pagination = {
+      take: perPage,
+      skip: (page - 1) * perPage,
+    };
     return await this.prisma.postBookmark.findMany({
       orderBy: [{ createdAt: 'desc' }],
+      ...pagination,
       where: {
         userId,
       },
-      include: {
+      select: {
         post: {
           include: {
             author: {
-              include: {
+              select: {
                 profile: {
-                  include: {
-                    avatar: true,
+                  select: {
+                    avatar: { select: { url: true } },
                   },
                 },
               },
             },
             article: {
-              include: { image: true, reactions: { include: { user: true } } },
+              select: {
+                image: { select: { url: true } },
+              },
             },
-            question: { include: { reactions: { include: { user: true } } } },
-            comments: true,
-            bookmarks: true,
+            question: true,
           },
         },
       },
@@ -316,7 +339,11 @@ export class PostsService {
   }
 
   async createSlug(title: string) {
-    const slug = slugify(title, { lower: true });
+    const slug = slugify(title, {
+      lower: true,
+      strict: true,
+      remove: /[*+~.()'":@]/g,
+    });
     const post = await this.prisma.post.findUnique({ where: { slug } });
     if (!post) {
       return slug;
@@ -325,7 +352,11 @@ export class PostsService {
   }
 
   async updateSlug(title: string, post: Post) {
-    const slug = slugify(title, { lower: true });
+    const slug = slugify(title, {
+      lower: true,
+      strict: true,
+      remove: /[*+~.()'":@]/g,
+    });
     if (slug !== post.slug) {
       const post = await this.prisma.post.findUnique({ where: { slug } });
       if (!post) {

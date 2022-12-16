@@ -27,4 +27,9 @@ export class NotificationsController {
   update(@Param('id') id: string) {
     return this.notificationsService.readNotification(id);
   }
+
+  @Patch(':id/all')
+  updateAll(@Param('id') userId: string) {
+    return this.notificationsService.readAllNotification(userId);
+  }
 }

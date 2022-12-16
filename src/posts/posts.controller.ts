@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -24,13 +25,50 @@ export class PostsController {
   }
 
   @Get()
-  findAll() {
-    return this.postsService.findAll();
+  findAll(
+    @Query('page') page: number,
+    @Query('perPage') perPage: number,
+    @Query('type') type: 'ARTICLE' | 'QUESTION',
+    @Query('tagNames') tagNames: string[],
+    @Query('userId') userId: string,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+    @Query('search') search: string,
+    @Query('draft') draft: boolean,
+  ) {
+    return this.postsService.findAll(+page || 1, +perPage || 10, search, {
+      type,
+      tagNames,
+      userId,
+      draft,
+      dateRange: {
+        startDate,
+        endDate,
+      },
+    });
   }
 
-  @Get(':slug')
-  findOne(@Param('slug') slug: string) {
-    return this.postsService.getPostBySlug(slug);
+  // post by slug
+  @Get(':slug/single/:userId')
+  findOne(@Param('slug') slug: string, @Param('userId') userId: string) {
+    console.log('slug', slug);
+    return this.postsService.getPostBySlug(slug, userId);
+  }
+
+  // get all bookmarks of a user
+  @Get('bookmarks/:userId')
+  getBookmarks(
+    @Param('userId') userId: string,
+    @Query('page') page: number,
+    @Query('perPage') perPage: number,
+  ) {
+    return this.postsService.getBookmarks(userId, +page, +perPage);
+  }
+
+  // get all reactions of a post
+  @Get(':id/reactions/posts')
+  getReactions(@Param('id') id: string) {
+    return this.postsService.getAllReactionsOfPost(id);
   }
 
   @Patch(':id')
@@ -97,17 +135,5 @@ export class PostsController {
   @Patch(':id/bookmarks/:userId')
   addToBookmarks(@Param('id') id: string, @Param('userId') userId: string) {
     return this.postsService.addToBookmarks(id, userId);
-  }
-
-  // get all bookmarks of a user
-  @Get('bookmarks/:userId')
-  getBookmarks(@Param('userId') userId: string) {
-    return this.postsService.getBookmarks(userId);
-  }
-
-  // get all reactions of a post
-  @Get(':id/reactions/posts')
-  getReactions(@Param('id') id: string) {
-    return this.postsService.getAllReactionsOfPost(id);
   }
 }

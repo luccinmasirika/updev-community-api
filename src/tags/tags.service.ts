@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 
@@ -7,12 +7,17 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 export class TagsService {
   constructor(private prisma: PrismaService) {}
   create(createTagDto: CreateTagDto) {
-    return this.prisma.tags.create({data: {name: createTagDto.name}})
+    return this.prisma.tags.create({ data: { name: createTagDto.name } });
   }
 
   async findAll(name: string) {
     return await this.prisma.tags.findMany({
       where: { ...(name && { name: { contains: name } }) },
+      orderBy: [
+        {
+          posts: { _count: 'desc' },
+        },
+      ],
       include: { _count: true },
     });
   }

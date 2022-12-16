@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 
 @Injectable()
@@ -115,6 +115,15 @@ export class NotificationsService {
   async readNotification(id: string) {
     return await this.prisma.notification.update({
       where: { id },
+      data: {
+        read: true,
+      },
+    });
+  }
+
+  async readAllNotification(userId: string) {
+    return await this.prisma.notification.updateMany({
+      where: { notificationToUser: { id: userId } },
       data: {
         read: true,
       },

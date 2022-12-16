@@ -135,6 +135,7 @@ model Post {
   bookmarks     PostBookmark[]
   notifications Notification[]
 
+  @@index([slug])
   @@map("posts")
 }
 

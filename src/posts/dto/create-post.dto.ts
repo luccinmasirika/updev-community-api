@@ -65,7 +65,7 @@ export class CreatePostDto {
     format: 'string',
     example: 'lorem ipsum',
   })
-  publishedOn: string;
+  publishedOn?: string;
 
   @IsOptional()
   @ApiProperty({
@@ -73,5 +73,5 @@ export class CreatePostDto {
     format: 'string',
     example: true,
   })
-  draft: boolean;
+  draft?: boolean;
 }
