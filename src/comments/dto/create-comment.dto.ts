@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class CreateCommentDto {
   @IsString()
@@ -25,4 +25,16 @@ export class CreateCommentDto {
     example: 'lorem ipsum',
   })
   post: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    type: String,
+    format: 'string',
+    example: 'lorem ipsum',
+  })
+  parentComment?: string;
+
+  @ApiProperty({})
+  depth?: number;
 }

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTagDto } from './dto/create-tag.dto';
-import { UpdateTagDto } from './dto/update-tag.dto';
 
 @Injectable()
 export class TagsService {
@@ -22,15 +21,40 @@ export class TagsService {
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} tag`;
+  async followTag(tagName: string, userId: string) {
+    const follow = await this.prisma.followTags.findUnique({
+      where: {
+        userId_tagName: {
+          userId,
+          tagName,
+        },
+      },
+    });
+
+    if (follow) {
+      return this.prisma.followTags.delete({
+        where: {
+          id: follow.id,
+        },
+      });
+    } else {
+      return this.prisma.followTags.create({
+        data: {
+          tagName,
+          userId,
+        },
+      });
+    }
   }
 
-  update(id: number, updateTagDto: UpdateTagDto) {
-    return `This action updates a #${id} tag`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} tag`;
+  async getFollowedTags(userId: string) {
+    return await this.prisma.followTags.findMany({
+      where: {
+        userId,
+      },
+      select: {
+        tag: { select: { name: true, _count: { select: { posts: true } } } },
+      },
+    });
   }
 }

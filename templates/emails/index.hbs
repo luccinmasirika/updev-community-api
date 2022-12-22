@@ -1,393 +1,707 @@
-<!doctype html>
-<html>
-  <head>
-	<meta name="viewport" content="width=device-width" />
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	<title>{{ title }}</title>
+<!DOCTYPE html>
+
+<html lang="en" xmlns:o="urn:schemas-microsoft-com:office:office"
+	xmlns:v="urn:schemas-microsoft-com:vml">
+
+<head>
+	<title></title>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+	<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+	<!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch><o:AllowPNG/></o:OfficeDocumentSettings></xml><![endif]-->
+	<!--[if !mso]><!-->
+	<link href="https://fonts.googleapis.com/css?family=Cormorant+Garamond"
+		rel="stylesheet" type="text/css" />
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans"
+		rel="stylesheet" type="text/css" />
+	<link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet"
+		type="text/css" />
+	<link href="https://fonts.googleapis.com/css?family=Droid+Serif"
+		rel="stylesheet" type="text/css" />
+	<link href="https://fonts.googleapis.com/css?family=Fira+Sans"
+		rel="stylesheet" type="text/css" />
+	<link href="https://fonts.googleapis.com/css?family=Lora" rel="stylesheet"
+		type="text/css" />
+	<link href="https://fonts.googleapis.com/css?family=Quattrocento"
+		rel="stylesheet" type="text/css" />
+	<link href="https://fonts.googleapis.com/css?family=Permanent+Marker"
+		rel="stylesheet" type="text/css" />
+	<link href="https://fonts.googleapis.com/css?family=Oswald" rel="stylesheet"
+		type="text/css" />
+	<link href="https://fonts.googleapis.com/css?family=Montserrat"
+		rel="stylesheet" type="text/css" />
+	<link href="https://fonts.googleapis.com/css?family=Merriweather"
+		rel="stylesheet" type="text/css" />
+	<!--<![endif]-->
 	<style>
-	  /* -------------------------------------
-		  GLOBAL RESETS
-	  ------------------------------------- */
-
-	  /*All the styling goes here*/
-
-	  img {
-		border: none;
-		-ms-interpolation-mode: bicubic;
-		max-width: 100%;
-	  }
-
-	  body {
-		background-color: #f6f6f6;
-		font-family: sans-serif;
-		-webkit-font-smoothing: antialiased;
-		font-size: 14px;
-		line-height: 1.4;
-		margin: 0;
-		padding: 0;
-		-ms-text-size-adjust: 100%;
-		-webkit-text-size-adjust: 100%;
-	  }
-
-	  table {
-		border-collapse: separate;
-		mso-table-lspace: 0pt;
-		mso-table-rspace: 0pt;
-		width: 100%; }
-		table td {
-		  font-family: sans-serif;
-		  font-size: 14px;
-		  vertical-align: top;
-	  }
-
-	  /* -------------------------------------
-		  BODY & CONTAINER
-	  ------------------------------------- */
-
-	  .body {
-		background-color: #f6f6f6;
-		width: 100%;
-	  }
-
-	  /* Set a max-width, and make it display as block so it will automatically stretch to that width, but will also shrink down on a phone or something */
-	  .container {
-		display: block;
-		margin: 0 auto !important;
-		/* makes it centered */
-		max-width: 580px;
-		padding: 10px;
-		width: 580px;
-	  }
-
-	  /* This should also be a block element, so that it will fill 100% of the .container */
-	  .content {
-		box-sizing: border-box;
-		display: block;
-		margin: 0 auto;
-		max-width: 580px;
-		padding: 10px;
-	  }
-
-	  /* -------------------------------------
-		  HEADER, FOOTER, MAIN
-	  ------------------------------------- */
-	  .main {
-		background: #ffffff;
-		border-radius: 3px;
-		width: 100%;
-	  }
-
-	  .wrapper {
-		box-sizing: border-box;
-		padding: 20px;
-	  }
-
-	  .content-block {
-		padding-bottom: 10px;
-		padding-top: 10px;
-	  }
-
-	  .footer {
-		clear: both;
-		margin-top: 10px;
-		text-align: center;
-		width: 100%;
-	  }
-		.footer td,
-		.footer p,
-		.footer span,
-		.footer a {
-		  color: #999999;
-		  font-size: 12px;
-		  text-align: center;
-	  }
-
-	  /* -------------------------------------
-		  TYPOGRAPHY
-	  ------------------------------------- */
-	  h1,
-	  h2,
-	  h3,
-	  h4 {
-		color: #000000;
-		font-family: sans-serif;
-		font-weight: 400;
-		line-height: 1.4;
-		margin: 0;
-		margin-bottom: 30px;
-	  }
-
-	  h1 {
-		font-size: 35px;
-		font-weight: 300;
-		text-align: center;
-		text-transform: capitalize;
-	  }
-
-	  p,
-	  ul,
-	  ol {
-		font-family: sans-serif;
-		font-size: 14px;
-		font-weight: normal;
-		margin: 0;
-		margin-bottom: 15px;
-	  }
-		p li,
-		ul li,
-		ol li {
-		  list-style-position: inside;
-		  margin-left: 5px;
-	  }
-
-	  a {
-		color: #E85650;
-		text-decoration: underline;
-	  }
-
-		/* -------------------------------------
-		  Password
-	  ------------------------------------- */
-
-		.password {
-			font-weight: 900;
-			font-size: 22px;
-		  color: #E85650;
+		* {
+			box-sizing: border-box;
 		}
 
-	  /* -------------------------------------
-		  BUTTONS
-	  ------------------------------------- */
-	  .btn {
-		box-sizing: border-box;
-		width: 100%; }
-		.btn > tbody > tr > td {
-		  padding-bottom: 15px; }
-		.btn table {
-		  width: auto;
-	  }
-		.btn table td {
-		  background-color: #ffffff;
-		  border-radius: 5px;
-		  text-align: center;
-	  }
-		.btn a {
-		  background-color: #ffffff;
-		  border: solid 1px #E85650;
-		  border-radius: 5px;
-		  box-sizing: border-box;
-		  color: #E85650;
-		  cursor: pointer;
-		  display: inline-block;
-		  font-size: 14px;
-		  font-weight: bold;
-		  margin: 0;
-		  padding: 12px 25px;
-		  text-decoration: none;
-		  text-transform: capitalize;
-	  }
-
-	  .btn-primary table td {
-		background-color: #E85650;
-	  }
-
-	  .btn-primary a {
-		background-color: #E85650;
-		border-color: #E85650;
-		color: #ffffff;
-	  }
-
-	  /* -------------------------------------
-		  OTHER STYLES THAT MIGHT BE USEFUL
-	  ------------------------------------- */
-	  .last {
-		margin-bottom: 0;
-	  }
-
-	  .first {
-		margin-top: 0;
-	  }
-
-	  .align-center {
-		text-align: center;
-	  }
-
-	  .align-right {
-		text-align: right;
-	  }
-
-	  .align-left {
-		text-align: left;
-	  }
-
-	  .clear {
-		clear: both;
-	  }
-
-	  .mt0 {
-		margin-top: 0;
-	  }
-
-	  .mb0 {
-		margin-bottom: 0;
-	  }
-
-	  .preheader {
-		color: transparent;
-		display: none;
-		height: 0;
-		max-height: 0;
-		max-width: 0;
-		opacity: 0;
-		overflow: hidden;
-		mso-hide: all;
-		visibility: hidden;
-		width: 0;
-	  }
-
-	  .powered-by a {
-		text-decoration: none;
-	  }
-
-	  hr {
-		border: 0;
-		border-bottom: 1px solid #f6f6f6;
-		margin: 20px 0;
-	  }
-
-	  /* -------------------------------------
-		  RESPONSIVE AND MOBILE FRIENDLY STYLES
-	  ------------------------------------- */
-	  @media only screen and (max-width: 620px) {
-		table[class=body] h1 {
-		  font-size: 28px !important;
-		  margin-bottom: 10px !important;
+		body {
+			margin: 0;
+			padding: 0;
 		}
-		table[class=body] p,
-		table[class=body] ul,
-		table[class=body] ol,
-		table[class=body] td,
-		table[class=body] span,
-		table[class=body] a {
-		  font-size: 16px !important;
-		}
-		table[class=body] .wrapper,
-		table[class=body] .article {
-		  padding: 10px !important;
-		}
-		table[class=body] .content {
-		  padding: 0 !important;
-		}
-		table[class=body] .container {
-		  padding: 0 !important;
-		  width: 100% !important;
-		}
-		table[class=body] .main {
-		  border-left-width: 0 !important;
-		  border-radius: 0 !important;
-		  border-right-width: 0 !important;
-		}
-		table[class=body] .btn table {
-		  width: 100% !important;
-		}
-		table[class=body] .btn a {
-		  width: 100% !important;
-		}
-		table[class=body] .img-responsive {
-		  height: auto !important;
-		  max-width: 100% !important;
-		  width: auto !important;
-		}
-	  }
 
-	  /* -------------------------------------
-		  PRESERVE THESE STYLES IN THE HEAD
-	  ------------------------------------- */
-	  @media all {
-		.ExternalClass {
-		  width: 100%;
+		a[x-apple-data-detectors] {
+			color: inherit !important;
+			text-decoration: inherit !important;
 		}
-		.ExternalClass,
-		.ExternalClass p,
-		.ExternalClass span,
-		.ExternalClass font,
-		.ExternalClass td,
-		.ExternalClass div {
-		  line-height: 100%;
-		}
-		.apple-link a {
-		  color: inherit !important;
-		  font-family: inherit !important;
-		  font-size: inherit !important;
-		  font-weight: inherit !important;
-		  line-height: inherit !important;
-		  text-decoration: none !important;
-		}
+
 		#MessageViewBody a {
-		  color: inherit;
-		  text-decoration: none;
-		  font-size: inherit;
-		  font-family: inherit;
-		  font-weight: inherit;
-		  line-height: inherit;
+			color: inherit;
+			text-decoration: none;
 		}
-		.btn-primary table td:hover {
-		  background-color: #34495e !important;
-		}
-		.btn-primary a:hover {
-		  background-color: #34495e !important;
-		  border-color: #34495e !important;
-		}
-	  }
 
+		p {
+			line-height: inherit
+		}
+
+		.desktop_hide,
+		.desktop_hide table {
+			mso-hide: all;
+			display: none;
+			max-height: 0px;
+			overflow: hidden;
+		}
+
+		@media (max-width:620px) {
+
+			.desktop_hide table.icons-inner,
+			.social_block.desktop_hide .social-table {
+				display: inline-block !important;
+			}
+
+			.icons-inner {
+				text-align: center;
+			}
+
+			.icons-inner td {
+				margin: 0 auto;
+			}
+
+			.image_block img.big,
+			.row-content {
+				width: 100% !important;
+			}
+
+			.mobile_hide {
+				display: none;
+			}
+
+			.stack .column {
+				width: 100%;
+				display: block;
+			}
+
+			.mobile_hide {
+				min-height: 0;
+				max-height: 0;
+				max-width: 0;
+				overflow: hidden;
+				font-size: 0px;
+			}
+
+			.desktop_hide,
+			.desktop_hide table {
+				display: table !important;
+				max-height: none !important;
+			}
+		}
 	</style>
-  </head>
-  <body class="">
-	<span class="preheader">Title</span>
-	<table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
-	  <tr>
-		<td>&nbsp;</td>
-		<td class="container">
-		  <div class="content">
+</head>
 
-			<!-- START CENTERED WHITE CONTAINER -->
-			<table role="presentation" class="main">
-
-			  <!-- START MAIN CONTENT AREA -->
-			  <tr>
-				<td class="wrapper">
-				  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-					<tr>
-					  <td>
-						<p>{{ title }}</p>
-						<p>{{ content }}</p>
-					  </td>
-					  </tr>
-				  </table>
+<body
+	style="background-color: #FFFFFF; margin: 0; padding: 0; -webkit-text-size-adjust: none; text-size-adjust: none;">
+	<table border="0" cellpadding="0" cellspacing="0" class="nl-container"
+		role="presentation"
+		style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #FFFFFF;"
+		width="100%">
+		<tbody>
+			<tr>
+				<td>
+					<table align="center" border="0" cellpadding="0"
+						cellspacing="0" class="row row-1" role="presentation"
+						style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #f7f6f5;"
+						width="100%">
+						<tbody>
+							<tr>
+								<td>
+									<table align="center" border="0"
+										cellpadding="0" cellspacing="0"
+										class="row-content stack"
+										role="presentation"
+										style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #fff; color: #000000; width: 600px;"
+										width="600">
+										<tbody>
+											<tr>
+												<td class="column column-1"
+													style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; vertical-align: top; padding-top: 0px; padding-bottom: 0px; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;"
+													width="100%">
+													<table border="0"
+														cellpadding="0"
+														cellspacing="0"
+														class="social_block block-1"
+														role="presentation"
+														style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;"
+														width="100%">
+														<tr>
+															<td class="pad"
+																style="text-align:center;padding-right:0px;padding-left:0px;">
+																<div align="center"
+																	class="alignment">
+																	<table
+																		border="0"
+																		cellpadding="0"
+																		cellspacing="0"
+																		class="social-table"
+																		role="presentation"
+																		style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; display: inline-block;"
+																		width="168px">
+																		<tr>
+																			<td
+																				style="padding:0 5px 0 5px;">
+																				<a href="https://www.facebook.com/DevelopersUp"
+																					target="_blank"><img
+																						alt="Facebook"
+																						height="32"
+																						src="https://api.updevcommunity.com/assets/facebook2x.png"
+																						style="display: block; height: auto; border: 0;"
+																						title="Facebook"
+																						width="32" /></a>
+																			</td>
+																			<td
+																				style="padding:0 5px 0 5px;">
+																				<a href="https://www.linkedin.com/company/uptodate-developers/?viewAsMember=true"
+																					target="_blank"><img
+																						alt="LinkedIn"
+																						height="32"
+																						src="https://api.updevcommunity.com/assets/linkedin2x.png"
+																						style="display: block; height: auto; border: 0;"
+																						title="LinkedIn"
+																						width="32" /></a>
+																			</td>
+																			<td
+																				style="padding:0 5px 0 5px;">
+																				<a href="https://www.instagram.com/updev_officiel/"
+																					target="_blank"><img
+																						alt="Instagram"
+																						height="32"
+																						src="https://api.updevcommunity.com/assets/instagram2x.png"
+																						style="display: block; height: auto; border: 0;"
+																						title="Instagram"
+																						width="32" /></a>
+																			</td>
+																			<td
+																				style="padding:0 5px 0 5px;">
+																				<a href="https://twitter.com/DevelopersUp"
+																					target="_blank"><img
+																						alt="Twitter"
+																						height="32"
+																						src="https://api.updevcommunity.com/assets/twitter2x.png"
+																						style="display: block; height: auto; border: 0;"
+																						title="Twitter"
+																						width="32" /></a>
+																			</td>
+																		</tr>
+																	</table>
+																</div>
+															</td>
+														</tr>
+													</table>
+													<table border="0"
+														cellpadding="0"
+														cellspacing="0"
+														class="heading_block block-2"
+														role="presentation"
+														style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;"
+														width="100%">
+														<tr>
+															<td class="pad"
+																style="padding-bottom:35px;padding-left:5px;padding-right:5px;padding-top:5px;text-align:center;width:100%;">
+																<h1
+																	style="margin: 0; color: #072b52; direction: ltr; font-family: 'Lora', Georgia, serif; font-size: 19px; font-weight: 400; letter-spacing: 1px; line-height: 120%; text-align: center; margin-top: 0; margin-bottom: 0;">
+																	<span
+																		class="tinyMce-placeholder">Keep
+																		sharing
+																		with us
+																		by
+																		tagging
+																		<strong>#UpdevCommunity</strong></span>
+																</h1>
+															</td>
+														</tr>
+													</table>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					
+					<table align="center" border="0" cellpadding="0"
+						cellspacing="0" class="row row-3" role="presentation"
+						style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #f7f6f5;"
+						width="100%">
+						<tbody>
+							<tr>
+								<td>
+									<table align="center" border="0"
+										cellpadding="0" cellspacing="0"
+										class="row-content stack"
+										role="presentation"
+										style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #ffffff; border-radius: 0; color: #000000; width: 600px;"
+										width="600">
+										<tbody>
+											<tr>
+												<td class="column column-1"
+													style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; padding-left: 20px; padding-right: 20px; vertical-align: middle; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;"
+													width="25%">
+													<table border="0"
+														cellpadding="0"
+														cellspacing="0"
+														class="image_block block-2"
+														role="presentation"
+														style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;"
+														width="100%">
+														<tr>
+															<td class="pad"
+																style="width:100%;padding-right:0px;padding-left:0px;padding-top:20px;padding-bottom:20px;">
+																<div align="center"
+																	class="alignment"
+																	style="line-height:10px">
+																	<a href="https://updevcommunity.com/signup.jpg"
+																		style="outline:none"
+																		tabindex="-1"
+																		target="_blank"><img
+																			src={{ image }}
+																			style="display: block; height: auto; border: 0; width: 110px; max-width: 100%;"
+																			width="110" /></a>
+																</div>
+															</td>
+														</tr>
+													</table>
+												</td>
+												<td class="column column-2"
+													style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; vertical-align: middle; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;"
+													width="75%">
+													<table border="0"
+														cellpadding="0"
+														cellspacing="0"
+														class="paragraph_block block-2"
+														role="presentation"
+														style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; word-break: break-word;"
+														width="100%">
+														<tr>
+															<td class="pad"
+																style="padding-top:5px;">
+																<div
+																	style="color:#000000;direction:ltr;font-family:Arial, Helvetica Neue, Helvetica, sans-serif;font-size:14px;font-weight:400;letter-spacing:0px;line-height:120%;text-align:left;mso-line-height-alt:16.8px;">
+																	<p
+																		style="margin: 0;">
+																		{{ reaction }}
+																	</p>
+																</div>
+															</td>
+														</tr>
+													</table>
+													<table border="0"
+														cellpadding="0"
+														cellspacing="0"
+														class="heading_block block-3"
+														role="presentation"
+														style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;"
+														width="100%">
+														<tr>
+															<td class="pad"
+																style="text-align:center;width:100%;padding-bottom:5px;">
+																<h1
+																	style="margin: 0; color: #555555; direction: ltr; font-family: Arial, Helvetica Neue, Helvetica, sans-serif; font-size: 23px; font-weight: 700; letter-spacing: normal; line-height: 120%; text-align: left; margin-top: 0; margin-bottom: 0;">
+																	<span
+																		class="tinyMce-placeholder">{{ title }}</span>
+																</h1>
+															</td>
+														</tr>
+													</table>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<table align="center" border="0" cellpadding="0"
+						cellspacing="0" class="row row-4" role="presentation"
+						style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #f7f6f5;"
+						width="100%">
+						<tbody>
+							<tr>
+								<td>
+									<table align="center" border="0"
+										cellpadding="0" cellspacing="0"
+										class="row-content stack"
+										role="presentation"
+										style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #ffffff; border-radius: 0; color: #000000; width: 600px;"
+										width="600">
+										<tbody>
+											<tr>
+												<td class="column column-1"
+													style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; vertical-align: top; padding-top: 5px; padding-bottom: 5px; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;"
+													width="100%">
+													<div class="spacer_block"
+														style="height:60px;line-height:60px;font-size:1px;">
+														 </div>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<table align="center" border="0" cellpadding="0"
+						cellspacing="0" class="row row-5" role="presentation"
+						style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #f7f6f5;"
+						width="100%">
+						<tbody>
+							<tr>
+								<td>
+									<table align="center" border="0"
+										cellpadding="0" cellspacing="0"
+										class="row-content stack"
+										role="presentation"
+										style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #f7f6f5; color: #000000; width: 600px;"
+										width="600">
+										<tbody>
+											<tr>
+												<td class="column column-1"
+													style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; vertical-align: top; padding-top: 5px; padding-bottom: 5px; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;"
+													width="100%">
+													<table border="0"
+														cellpadding="0"
+														cellspacing="0"
+														class="social_block block-2"
+														role="presentation"
+														style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;"
+														width="100%">
+														<tr>
+															<td class="pad"
+																style="text-align:center;padding-right:0px;padding-left:0px;padding-top:60px;">
+																<div align="center"
+																	class="alignment">
+																	<table
+																		border="0"
+																		cellpadding="0"
+																		cellspacing="0"
+																		class="social-table"
+																		role="presentation"
+																		style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; display: inline-block;"
+																		width="168px">
+																		<tr>
+																			<td
+																				style="padding:0 5px 0 5px;">
+																				<a href="https://www.facebook.com/DevelopersUp"
+																					target="_blank"><img
+																						alt="Facebook"
+																						height="32"
+																						src="https://api.updevcommunity.com/facebook2x.png"
+																						style="display: block; height: auto; border: 0;"
+																						title="Facebook"
+																						width="32" /></a>
+																			</td>
+																			<td
+																				style="padding:0 5px 0 5px;">
+																				<a href="https://www.linkedin.com/company/uptodate-developers/?viewAsMember=true"
+																					target="_blank"><img
+																						alt="LinkedIn"
+																						height="32"
+																						src="https://api.updevcommunity.com/linkedin2x.png"
+																						style="display: block; height: auto; border: 0;"
+																						title="LinkedIn"
+																						width="32" /></a>
+																			</td>
+																			<td
+																				style="padding:0 5px 0 5px;">
+																				<a href="https://www.instagram.com/updev_officiel/"
+																					target="_blank"><img
+																						alt="Instagram"
+																						height="32"
+																						src="https://api.updevcommunity.com/instagram2x.png"
+																						style="display: block; height: auto; border: 0;"
+																						title="Instagram"
+																						width="32" /></a>
+																			</td>
+																			<td
+																				style="padding:0 5px 0 5px;">
+																				<a href="https://twitter.com/DevelopersUp"
+																					target="_blank"><img
+																						alt="Twitter"
+																						height="32"
+																						src="https://api.updevcommunity.com/twitter2x.png"
+																						style="display: block; height: auto; border: 0;"
+																						title="Twitter"
+																						width="32" /></a>
+																			</td>
+																		</tr>
+																	</table>
+																</div>
+															</td>
+														</tr>
+													</table>
+													<table border="0"
+														cellpadding="0"
+														cellspacing="0"
+														class="image_block block-3"
+														role="presentation"
+														style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;"
+														width="100%">
+														<tr>
+															<td class="pad"
+																style="width:100%;padding-right:0px;padding-left:0px;">
+																<div align="center"
+																	class="alignment"
+																	style="line-height:10px">
+																	<img alt="your-logo"
+																		src="https://api.updevcommunity.com/assets/logo.png"
+																		style="display: block; height: auto; border: 0; width: 120px; max-width: 100%;"
+																		title="your-logo"
+																		width="120" />
+																</div>
+															</td>
+														</tr>
+													</table>
+													<table border="0"
+														cellpadding="0"
+														cellspacing="0"
+														class="html_block block-4"
+														role="presentation"
+														style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;"
+														width="100%">
+														<tr>
+															<td class="pad">
+																<div align="center"
+																	style="font-family:Arial, Helvetica Neue, Helvetica, sans-serif;text-align:center;">
+																	<div
+																		style="height:30px;">
+																		 </div>
+																</div>
+															</td>
+														</tr>
+													</table>
+													<table border="0"
+														cellpadding="0"
+														cellspacing="0"
+														class="html_block block-5"
+														role="presentation"
+														style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;"
+														width="100%">
+														<tr>
+															<td class="pad">
+																<div align="center"
+																	style="font-family:Arial, Helvetica Neue, Helvetica, sans-serif;text-align:center;">
+																	<div
+																		style="height:30px;">
+																		 </div>
+																</div>
+															</td>
+														</tr>
+													</table>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<table align="center" border="0" cellpadding="0"
+						cellspacing="0" class="row row-6" role="presentation"
+						style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #f7f6f5;"
+						width="100%">
+						<tbody>
+							<tr>
+								<td>
+									<table align="center" border="0"
+										cellpadding="0" cellspacing="0"
+										class="row-content stack"
+										role="presentation"
+										style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; background-color: #072b52; color: #000000; width: 600px;"
+										width="600">
+										<tbody>
+											<tr>
+												<td class="column column-1"
+													style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; vertical-align: top; padding-top: 5px; padding-bottom: 5px; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;"
+													width="100%">
+													<table border="0"
+														cellpadding="10"
+														cellspacing="0"
+														class="text_block block-1"
+														role="presentation"
+														style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; word-break: break-word;"
+														width="100%">
+														<tr>
+															<td class="pad">
+																<div
+																	style="font-family: Tahoma, Verdana, sans-serif">
+																	<div class=""
+																		style="font-size: 12px; font-family: 'Lato', Tahoma, Verdana, Segoe, sans-serif; mso-line-height-alt: 14.399999999999999px; color: #f7f6f5; line-height: 1.2;">
+																		<p
+																			style="margin: 0; mso-line-height-alt: 14.399999999999999px;">
+																			 
+																		</p>
+																		<p
+																			style="margin: 0; text-align: center; mso-line-height-alt: 14.399999999999999px;">
+																			<a href="http://www.example.com/"
+																				rel="noopener"
+																				style="text-decoration: underline; color: #f7f6f5;"
+																				target="_blank"
+																				title="http://www.example.com/">Terms
+																				&
+																				Conditions</a>
+																		</p>
+																		<p
+																			style="margin: 0; text-align: center; mso-line-height-alt: 14.399999999999999px;">
+																			 
+																		</p>
+																		<p
+																			style="margin: 0; text-align: center; mso-line-height-alt: 14.399999999999999px;">
+																			By
+																			using
+																			Updev
+																			community,
+																			you
+																			agree
+																			to
+																			follow
+																			our
+																			code
+																			of
+																			conduct
+																			and
+																			respect
+																			the
+																			privacy
+																			of
+																			others.
+																			Any
+																			inappropriate
+																			or
+																			illegal
+																			activity
+																			is
+																			strictly
+																			prohibited.
+																			We
+																			reserve
+																			the
+																			right
+																			to
+																			remove
+																			any
+																			content
+																			or
+																			ban
+																			any
+																			user.<span
+																				style="color:#c0c0c0;"><br /></span>
+																		</p>
+																		<p
+																			style="margin: 0; text-align: center; mso-line-height-alt: 14.399999999999999px;">
+																			 
+																		</p>
+																		<p
+																			style="margin: 0; text-align: center; mso-line-height-alt: 14.399999999999999px;">
+																			©
+																			Copyright
+																			2021.
+																			Updev
+																			community.
+																			All
+																			Rights
+																			Reserved.
+																		</p>
+																		<p
+																			style="margin: 0; text-align: center; mso-line-height-alt: 14.399999999999999px;">
+																			 
+																		</p>
+																		<p
+																			style="margin: 0; font-size: 12px; text-align: center; mso-line-height-alt: 14.399999999999999px;">
+																			<span
+																				style="color:#c0c0c0;"> </span>
+																		</p>
+																	</div>
+																</div>
+															</td>
+														</tr>
+													</table>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<table align="center" border="0" cellpadding="0"
+						cellspacing="0" class="row row-7" role="presentation"
+						style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;"
+						width="100%">
+						<tbody>
+							<tr>
+								<td>
+									<table align="center" border="0"
+										cellpadding="0" cellspacing="0"
+										class="row-content stack"
+										role="presentation"
+										style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; color: #000000; width: 600px;"
+										width="600">
+										<tbody>
+											<tr>
+												<td class="column column-1"
+													style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; font-weight: 400; text-align: left; vertical-align: top; padding-top: 5px; padding-bottom: 5px; border-top: 0px; border-right: 0px; border-bottom: 0px; border-left: 0px;"
+													width="100%">
+													<table border="0"
+														cellpadding="0"
+														cellspacing="0"
+														class="icons_block block-1"
+														role="presentation"
+														style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;"
+														width="100%">
+														<tr>
+															<td class="pad"
+																style="vertical-align: middle; color: #9d9d9d; font-family: inherit; font-size: 15px; padding-bottom: 5px; padding-top: 5px; text-align: center;">
+																<table
+																	cellpadding="0"
+																	cellspacing="0"
+																	role="presentation"
+																	style="mso-table-lspace: 0pt; mso-table-rspace: 0pt;"
+																	width="100%">
+																	<tr>
+																		<td class="alignment"
+																			style="vertical-align: middle; text-align: center;">
+																			<!--[if vml]><table align="left" cellpadding="0" cellspacing="0" role="presentation" style="display:inline-block;padding-left:0px;padding-right:0px;mso-table-lspace: 0pt;mso-table-rspace: 0pt;"><![endif]-->
+																			<!--[if !vml]><!-->
+																			
+																		</td>
+																	</tr>
+																</table>
+															</td>
+														</tr>
+													</table>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</td>
+							</tr>
+						</tbody>
+					</table>
 				</td>
-			  </tr>
+			</tr>
+		</tbody>
+	</table><!-- End -->
+</body>
 
-			<!-- END MAIN CONTENT AREA -->
-			</table>
-			<!-- END CENTERED WHITE CONTAINER -->
-
-			<!-- START FOOTER -->
-			<div class="footer">
-			  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-				<tr>
-				  <td class="content-block">
-					<br> All rights reserved. <a href={{ siteLink }}>{{ siteLabel }}</a>.
-				  </td>
-				</tr>
-
-			  </table>
-			</div>
-			<!-- END FOOTER -->
-
-		  </div>
-		</td>
-		<td>&nbsp;</td>
-	  </tr>
-	</table>
-  </body>
 </html>

@@ -3,8 +3,8 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
-import { AppModule } from './app.module';
 import { join } from 'path';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -18,6 +18,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.setGlobalPrefix('api/v1');
   app.useStaticAssets(join(__dirname, '..', 'uploads'), { prefix: '/assets' });
+  app.useStaticAssets(join(__dirname, '..', 'assets'));
 
   const config = new DocumentBuilder()
     .setTitle('Nestjs API Documentation')

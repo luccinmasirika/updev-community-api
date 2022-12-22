@@ -1,18 +1,22 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
   Query,
 } from '@nestjs/common';
-import { PostsService } from './posts.service';
+import { ApiTags } from '@nestjs/swagger';
+import {
+  ArticleReactionType,
+  PostType,
+  QuestionReactionType,
+} from '@prisma/client';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { ApiTags } from '@nestjs/swagger';
-import { ArticleReactionType, QuestionReactionType } from '@prisma/client';
+import { PostsService } from './posts.service';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -28,31 +32,35 @@ export class PostsController {
   findAll(
     @Query('page') page: number,
     @Query('perPage') perPage: number,
-    @Query('type') type: 'ARTICLE' | 'QUESTION',
+    @Query('type') type: PostType,
     @Query('tagNames') tagNames: string[],
     @Query('userId') userId: string,
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
     @Query('search') search: string,
-    @Query('draft') draft: boolean,
+    @Query('status') status: string,
   ) {
-    return this.postsService.findAll(+page || 1, +perPage || 10, search, {
-      type,
-      tagNames,
-      userId,
-      draft,
-      dateRange: {
-        startDate,
-        endDate,
+    return this.postsService.findAll(
+      +page || 1,
+      +perPage || 10,
+      {
+        type,
+        tagNames,
+        userId,
+        status,
+        dateRange: {
+          startDate,
+          endDate,
+        },
       },
-    });
+      search,
+    );
   }
 
   // post by slug
-  @Get(':slug/single/:userId')
-  findOne(@Param('slug') slug: string, @Param('userId') userId: string) {
-    console.log('slug', slug);
-    return this.postsService.getPostBySlug(slug, userId);
+  @Get(':slug')
+  findOne(@Param('slug') slug: string) {
+    return this.postsService.getPostBySlug(slug);
   }
 
   // get all bookmarks of a user
@@ -85,6 +93,12 @@ export class PostsController {
   @Post('tags')
   getPostsByTag(@Body() tags: string[]) {
     return this.postsService.getPostsByTags(tags);
+  }
+
+  // get post suggestions by tags
+  @Post('suggestions')
+  getPostsSuggestionsByTag(@Body() body: { tags: string[]; type: PostType }) {
+    return this.postsService.getPostsSuggestionsByTags(body.tags, body.type);
   }
 
   // get post by author

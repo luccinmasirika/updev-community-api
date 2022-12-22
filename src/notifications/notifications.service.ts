@@ -1,16 +1,47 @@
 import { Injectable } from '@nestjs/common';
+import { MailerService } from '../mailer/mailer.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private mailerService: MailerService,
+  ) {}
   async create(createNotificationDto: CreateNotificationDto) {
     const { from, to, type, target } = createNotificationDto;
+
+    const receiver = await this.prisma.user.findFirst({ where: { id: to } });
+    const sender = await this.prisma.user.findFirst({ where: { id: from } });
+    const post = await this.prisma.post.findFirst({
+      where: { id: target },
+      include: { article: { include: { image: true } } },
+    });
 
     if (from === to) {
       return;
     }
+
+    this.mailerService.sendMail({
+      to: receiver.email,
+      from: 'Updev Community <info@updevcommunity.com>',
+      subject: `${sender.firstName} ${sender.lastName} ${
+        type !== 'COMMENT' ? 'react to your post' : 'commented your comment'
+      } `,
+      text: 'Email sent successfully ✔',
+      template: 'index',
+      context: {
+        sender: `${sender?.firstName} ${sender?.lastName}`,
+        image: `${post.type === 'ARTICLE'} ? ${
+          post?.article?.image?.url
+        } : '/favicon.com'`,
+        title: post?.title,
+        reaction: `${sender?.firstName} ${sender?.lastName} ${
+          type !== 'COMMENT' ? 'react to your post' : 'commented your comment'
+        } `,
+      },
+    });
 
     return await this.prisma.notification.create({
       data: {

@@ -45,6 +45,11 @@ enum QuestionReactionType {
   DISLIKE
 }
 
+enum CommentReactionType {
+  LIKE
+  DISLIKE
+}
+
 enum NotificationType {
   COMMENT
   REPLY
@@ -79,6 +84,8 @@ model User {
   questionReactions    QuestionReaction[]
   notificationToUser   Notification[]     @relation("NotificationToUser")
   notificationFromUser Notification[]     @relation("NotificationFromUser")
+  followedTags         FollowTags[]
+  commentReactions     CommentReaction[]
 
   @@map("users")
 }
@@ -104,15 +111,6 @@ model Profile {
 
   @@map("profiles")
 }
-
-// model Phone {
-//   id        String    @id @default(cuid())
-//   createdAt DateTime  @default(now())
-//   updatedAt DateTime  @updatedAt
-//   code      String    @default("+243")
-//   number    String?   @unique
-//   profiles  Profile[]
-// }
 
 model Post {
   id            String         @id @default(cuid())
@@ -152,25 +150,43 @@ model PostTags {
 }
 
 model PostComment {
-  id            String         @id @default(cuid())
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  post          Post           @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  postId        String
-  content       String         @db.Text
-  author        User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId        String
-  notifications Notification[]
+  id               String            @id @default(cuid())
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  post             Post              @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  postId           String
+  content          String            @db.Text
+  author           User              @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId           String
+  parentComment    PostComment?      @relation("parentCommentRelation", fields: [parentCommentId], references: [id])
+  parentCommentId  String?
+  depth            Int               @default(0)
+  childrenComments PostComment[]     @relation("parentCommentRelation")
+  notifications    Notification[]
+  reactions        CommentReaction[]
 
   @@map("comments")
 }
 
+model FollowTags {
+  id      String @id @default(cuid())
+  tag     Tags   @relation(fields: [tagName], references: [name], onDelete: Cascade, onUpdate: Cascade)
+  tagName String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId  String
+
+  @@unique([userId, tagName])
+  @@index([userId])
+  @@map("follow-tags")
+}
+
 model Tags {
-  id        String     @id @default(cuid())
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id        String       @id @default(cuid())
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
   posts     PostTags[]
   name      String
+  followers FollowTags[]
 
   @@unique([name])
   @@map("tags")
@@ -215,6 +231,20 @@ model QuestionReaction {
 
   @@unique([questionId, userId])
   @@map("question-reactions")
+}
+
+model CommentReaction {
+  id        String              @id @default(cuid())
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  comment   PostComment         @relation(fields: [commentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  commentId String
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    String
+  type      CommentReactionType
+
+  @@unique([commentId, userId])
+  @@map("comment-reactions")
 }
 
 model PostBookmark {

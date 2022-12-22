@@ -1,20 +1,20 @@
 import {
   BadRequestException,
-  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
-import slugify from 'slugify';
 import {
   ArticleReactionType,
   NotificationType,
   Post,
+  PostType,
   QuestionReactionType,
 } from '@prisma/client';
+import slugify from 'slugify';
 import { NotificationsService } from '../notifications/notifications.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
 
 @Injectable()
 export class PostsService {
@@ -23,7 +23,7 @@ export class PostsService {
     private readonly pushNotification: NotificationsService,
   ) {}
   async create(createPostDto: CreatePostDto) {
-    const { title, content, author, tags, type, image } = createPostDto;
+    const { title, content, author, tags, type, image, draft } = createPostDto;
 
     const slug = await this.createSlug(title);
     const postData = {
@@ -31,6 +31,7 @@ export class PostsService {
       title,
       content,
       type,
+      draft,
       author: { connect: { id: author } },
       tags: {
         create: tags.map((tag) => ({
@@ -66,7 +67,7 @@ export class PostsService {
   }
 
   async updatePost(id: string, data: UpdatePostDto) {
-    const { title, content, tags, image } = data;
+    const { title, content, tags, image, draft } = data;
     const post = await this.prisma.post.findFirst({
       where: { id },
       include: {
@@ -85,6 +86,7 @@ export class PostsService {
       slug,
       title,
       content,
+      draft,
       tags: {
         deleteMany: {},
         create: tags.map((tag) => ({
@@ -115,17 +117,17 @@ export class PostsService {
   async findAll(
     page: number,
     perPage: number,
-    search?: string,
     filters?: {
-      type?: 'ARTICLE' | 'QUESTION';
+      type?: PostType;
       tagNames?: string[];
       userId?: string;
-      draft: boolean;
+      status: string;
       dateRange?: {
         startDate: string;
         endDate: string;
       };
     },
+    search?: string,
   ) {
     const pagination = {
       take: perPage,
@@ -134,13 +136,13 @@ export class PostsService {
 
     let filter = {
       AND: [
+        { draft: filters.status === 'draft' ? true : false },
         filters?.type && { type: filters.type },
         filters?.tagNames &&
           filters.tagNames.length > 0 && {
             tags: { some: { tag: { id: { in: filters.tagNames } } } },
           },
         filters?.userId && { author: { id: filters.userId } },
-        filters?.draft && { draft: filters?.draft },
         filters?.dateRange && {
           createdAt: {
             gte: filters.dateRange.startDate,
@@ -162,6 +164,7 @@ export class PostsService {
         id: true,
         firstName: true,
         lastName: true,
+        email: true,
         profile: { select: { avatar: { select: { url: true } } } },
       },
     };
@@ -191,18 +194,19 @@ export class PostsService {
           },
         },
         tags: { select: { tag: { select: { name: true } } } },
-        comments: true,
+        _count: { select: { comments: true } },
         bookmarks: true,
       },
     });
   }
 
-  async getPostBySlug(slug: string, userId: string) {
+  async getPostBySlug(slug: string) {
     const author = {
       select: {
         id: true,
         firstName: true,
         lastName: true,
+        email: true,
         profile: { select: { avatar: { select: { url: true } } } },
       },
     };
@@ -226,6 +230,7 @@ export class PostsService {
           select: { tag: { select: { name: true } } },
         },
         bookmarks: true,
+        _count: { select: { comments: true } },
       },
     });
   }
@@ -371,6 +376,61 @@ export class PostsService {
     return await this.prisma.post.findMany({
       orderBy: [{ createdAt: 'desc' }],
       where: {
+        tags: {
+          some: {
+            OR: tags.map((el) => ({
+              tag: {
+                name: el,
+              },
+            })),
+          },
+        },
+      },
+
+      include: {
+        article: {
+          include: {
+            image: true,
+            reactions: {
+              include: {
+                user: { include: { profile: { include: { avatar: true } } } },
+              },
+            },
+          },
+        },
+        author: {
+          include: {
+            profile: {
+              include: {
+                avatar: true,
+              },
+            },
+          },
+        },
+        question: {
+          include: {
+            reactions: {
+              include: {
+                user: { include: { profile: { include: { avatar: true } } } },
+              },
+            },
+          },
+        },
+        tags: {
+          include: {
+            tag: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getPostsSuggestionsByTags(tags: string[], type?: PostType) {
+    return await this.prisma.post.findMany({
+      orderBy: [{ createdAt: 'desc' }],
+      take: 3,
+      where: {
+        type,
         tags: {
           some: {
             OR: tags.map((el) => ({

@@ -1,17 +1,15 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
   Param,
-  Delete,
+  Patch,
+  Post,
   Query,
 } from '@nestjs/common';
-import { TagsService } from './tags.service';
-import { CreateTagDto } from './dto/create-tag.dto';
-import { UpdateTagDto } from './dto/update-tag.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { CreateTagDto } from './dto/create-tag.dto';
+import { TagsService } from './tags.service';
 
 @ApiTags('Tags')
 @Controller('tags')
@@ -28,18 +26,13 @@ export class TagsController {
     return this.tagsService.findAll(name);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tagsService.findOne(+id);
+  @Patch('follow/:tagName/:userId')
+  follow(@Param('tagName') tagName: string, @Param('userId') userId: string) {
+    return this.tagsService.followTag(tagName, userId);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTagDto: UpdateTagDto) {
-    return this.tagsService.update(+id, updateTagDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tagsService.remove(+id);
+  @Get('followed/:userId')
+  getFollowedTags(@Param('userId') userId: string) {
+    return this.tagsService.getFollowedTags(userId);
   }
 }
