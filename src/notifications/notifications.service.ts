@@ -27,10 +27,11 @@ export class NotificationsService {
       to: receiver.email,
       from: 'Updev Community <info@updevcommunity.com>',
       subject: `${sender.firstName} ${sender.lastName} ${
-        type !== 'COMMENT' ? 'react to your post' : 'commented your comment'
+        type !== 'COMMENT'
+          ? 'a réagi à votre publication'
+          : 'a commenté votre publication'
       } `,
-      text: 'Email sent successfully ✔',
-      template: 'index',
+      template: 'notification',
       context: {
         sender: `${sender?.firstName} ${sender?.lastName}`,
         image: `${post.type === 'ARTICLE'} ? ${
@@ -38,7 +39,9 @@ export class NotificationsService {
         } : '/favicon.com'`,
         title: post?.title,
         reaction: `${sender?.firstName} ${sender?.lastName} ${
-          type !== 'COMMENT' ? 'react to your post' : 'commented your comment'
+          type !== 'COMMENT'
+            ? 'a réagi à votre publication'
+            : 'a commenté votre publication'
         } `,
       },
     });
@@ -64,7 +67,7 @@ export class NotificationsService {
       },
     });
   }
-
+  
   async findAll(toUserId: string) {
     const notifications = await this.prisma.notification.findMany({
       orderBy: [{ createdAt: 'desc' }],
