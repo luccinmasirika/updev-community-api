@@ -132,6 +132,48 @@ export class UsersService {
             },
           },
         },
+        followings: {
+          select: {
+            author: {
+              select: {
+                username: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                profile: {
+                  select: {
+                    avatar: {
+                      select: {
+                        url: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        followers: {
+          select: {
+            user: {
+              select: {
+                username: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                profile: {
+                  select: {
+                    avatar: {
+                      select: {
+                        url: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
   }
