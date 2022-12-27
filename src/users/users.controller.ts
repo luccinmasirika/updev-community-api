@@ -69,6 +69,12 @@ export class UsersController {
     return this.usersService.getMonthlyViewsForYear(id);
   }
 
+  // get user feed 
+  @Get(':id/feed')
+  async getUserFeed(@Param('id') id: string) {
+    return this.usersService.generateFeed(1, 10, id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.updateUser(id, updateUserDto);
