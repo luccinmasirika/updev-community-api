@@ -1,5 +1,20 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { RequestStatus } from '@prisma/client';
 import * as bycrypt from 'bcryptjs';
+import {
+  eachDayOfInterval,
+  eachMonthOfInterval,
+  endOfMonth,
+  endOfWeek,
+  endOfYear,
+  getDate,
+  getMonth,
+  startOfMonth,
+  startOfWeek,
+  startOfYear,
+  subDays,
+  subMonths,
+} from 'date-fns';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -9,7 +24,7 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async register(createUserDto: CreateUserDto) {
-    const { email, password, firstName, lastName } = createUserDto;
+    const { email, password, firstName = '', lastName = '' } = createUserDto;
     const hashedPassword = await this.hashPassword(password);
 
     const username = await this.checkUsername(
@@ -73,6 +88,14 @@ export class UsersService {
     });
   }
 
+  // update user role
+  async updateUserRole(id: string) {
+    return await this.prisma.user.update({
+      where: { id },
+      data: { role: 'AUTHOR' },
+    });
+  }
+
   async findOneByEmail(email: string) {
     return await this.prisma.user.findFirst({
       where: { email },
@@ -102,7 +125,13 @@ export class UsersService {
           orderBy: { createdAt: 'desc' },
           include: { article: { include: { image: true } }, question: true },
         },
-        comments: { orderBy: { createdAt: 'desc' } },
+        authorRequest: {
+          where: {
+            user: {
+              username,
+            },
+          },
+        },
       },
     });
   }
@@ -174,5 +203,195 @@ export class UsersService {
         });
       }),
     );
+  }
+
+  // get user views from all posts
+  async getUserViews(id: string) {
+    const posts = await this.prisma.postViews.count({
+      where: { userId: id },
+    });
+
+    return posts;
+  }
+
+  //toggle follow user
+  async followUser(userId: string, authorId: string) {
+    const follow = await this.prisma.followAuthors.findUnique({
+      where: { authorId_userId: { authorId, userId } },
+    });
+
+    if (follow) {
+      return await this.prisma.followAuthors.delete({
+        where: { authorId_userId: { authorId, userId } },
+      });
+    } else {
+      return await this.prisma.followAuthors.create({
+        data: {
+          user: { connect: { id: userId } },
+          author: { connect: { id: authorId } },
+        },
+      });
+    }
+  }
+
+  // get all users followed by user
+  async getFollowedUsers(id: string) {
+    return await this.prisma.followAuthors.findMany({
+      where: { userId: id },
+      include: { author: true },
+    });
+  }
+
+  // get all users following user
+  async getFollowingUsers(id: string) {
+    return await this.prisma.followAuthors.findMany({
+      where: { authorId: id },
+      include: { user: true },
+    });
+  }
+
+  // get weekly user views
+  async getDailyViewsForWeek(id: string) {
+    const year = new Date().getFullYear();
+    const month = getMonth(new Date());
+    const date = getDate(new Date());
+    const start = startOfWeek(new Date(year, month, date), {
+      weekStartsOn: 2,
+    });
+    const end = endOfWeek(new Date(year, month, date), { weekStartsOn: 2 });
+    const days = eachDayOfInterval({ start, end });
+
+    const posts = await this.prisma.postViews.findMany({
+      where: {
+        userId: id,
+        createdAt: {
+          gte: start,
+          lte: end,
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+    const views = days.reduce((acc, day) => {
+      const key = day.toISOString().substr(0, 10);
+      acc[key] = 0;
+      return acc;
+    }, {});
+
+    posts.forEach((post) => {
+      const date = new Date(post.createdAt);
+      const key = date.toISOString().substr(0, 10);
+      views[key] += 1;
+    });
+
+    return views;
+  }
+
+  // get monthly user views
+  async getDailyViewsForMonth(id: string) {
+    const start = subDays(startOfMonth(new Date()), -1);
+    const end = subDays(endOfMonth(new Date()), -1);
+    const days = eachDayOfInterval({ start, end });
+
+    const posts = await this.prisma.postViews.findMany({
+      where: {
+        userId: id,
+        createdAt: {
+          gte: start,
+          lte: end,
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+    const views = days.reduce((acc, day) => {
+      const key = day.toISOString().substr(5, 5);
+      acc[key] = 0;
+      return acc;
+    }, {});
+
+    posts.forEach((post) => {
+      const date = new Date(post.createdAt);
+      const key = date.toISOString().substr(5, 5);
+      views[key] += 1;
+    });
+
+    return views;
+  }
+
+  // get monthly user views for year
+  async getMonthlyViewsForYear(id: string) {
+    const start = subMonths(startOfYear(new Date()), -1);
+    const end = subMonths(endOfYear(new Date()), -1);
+    const months = eachMonthOfInterval({ start, end });
+
+    const posts = await this.prisma.postViews.findMany({
+      where: {
+        userId: id,
+        createdAt: {
+          gte: start,
+          lte: end,
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+    const views = months.reduce((acc, month) => {
+      const key = month.toISOString().substr(0, 7);
+      acc[key] = 0;
+      return acc;
+    }, {});
+
+    posts.forEach((post) => {
+      const date = new Date(post.createdAt);
+      const key = date.toISOString().substr(0, 7);
+      views[key] += 1;
+    });
+
+    return views;
+  }
+
+  async requestAuthorRole(id: string) {
+    const request = await this.prisma.authorRequest.findUnique({
+      where: { userId: id },
+    });
+
+    if (request) {
+      return await this.prisma.authorRequest.delete({
+        where: { userId: id },
+      });
+    } else {
+      return await this.prisma.authorRequest.create({
+        data: {
+          user: { connect: { id } },
+          status: 'PENDING',
+        },
+      });
+    }
+  }
+
+  async respondToAuthorRequest(id: string, status: RequestStatus) {
+    const request = await this.prisma.authorRequest.findUnique({
+      where: { userId: id },
+    });
+
+    if (request) {
+      return await this.prisma.authorRequest.delete({
+        where: { userId: id },
+      });
+    } else {
+      return await this.prisma.authorRequest.create({
+        data: {
+          user: { connect: { id } },
+          status,
+        },
+      });
+    }
   }
 }

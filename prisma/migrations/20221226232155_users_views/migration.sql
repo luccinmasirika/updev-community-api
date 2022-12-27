@@ -6,6 +6,7 @@ CREATE TABLE `users` (
     `firstName` VARCHAR(191) NOT NULL,
     `lastName` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NOT NULL,
+    `username` VARCHAR(191) NULL,
     `password` VARCHAR(191) NOT NULL,
     `accountStatus` ENUM('ACTIVE', 'DELETED', 'PENDING', 'DISABLED') NOT NULL DEFAULT 'ACTIVE',
     `role` ENUM('ADMIN', 'USER', 'AUTHOR') NOT NULL,
@@ -13,6 +14,7 @@ CREATE TABLE `users` (
     `filesId` VARCHAR(191) NULL,
 
     UNIQUE INDEX `users_email_key`(`email`),
+    UNIQUE INDEX `users_username_key`(`username`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -24,27 +26,16 @@ CREATE TABLE `profiles` (
     `fileId` VARCHAR(191) NULL,
     `bio` TEXT NULL,
     `website` VARCHAR(191) NULL,
-    `country` VARCHAR(191) NOT NULL,
-    `town` VARCHAR(191) NOT NULL,
+    `country` VARCHAR(191) NULL,
+    `town` VARCHAR(191) NULL,
     `sex` ENUM('M', 'F') NULL,
+    `phone` VARCHAR(191) NULL,
     `facebook` VARCHAR(191) NULL,
     `twitter` VARCHAR(191) NULL,
     `linkedIn` VARCHAR(191) NULL,
     `gitHub` VARCHAR(191) NULL,
-    `phoneId` VARCHAR(191) NOT NULL,
+    `job` VARCHAR(191) NULL,
 
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `Phone` (
-    `id` VARCHAR(191) NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-    `code` VARCHAR(191) NOT NULL DEFAULT '+243',
-    `number` VARCHAR(191) NULL,
-
-    UNIQUE INDEX `Phone_number_key`(`number`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -64,6 +55,18 @@ CREATE TABLE `posts` (
     `questionId` VARCHAR(191) NULL,
 
     UNIQUE INDEX `posts_slug_key`(`slug`),
+    INDEX `posts_slug_idx`(`slug`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `posts-views` (
+    `id` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+    `postId` VARCHAR(191) NOT NULL,
+    `userId` VARCHAR(191) NOT NULL,
+
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -86,7 +89,31 @@ CREATE TABLE `comments` (
     `postId` VARCHAR(191) NOT NULL,
     `content` TEXT NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
+    `parentCommentId` VARCHAR(191) NULL,
+    `depth` INTEGER NOT NULL DEFAULT 0,
 
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `follow-tags` (
+    `id` VARCHAR(191) NOT NULL,
+    `tagName` VARCHAR(191) NOT NULL,
+    `userId` VARCHAR(191) NOT NULL,
+
+    INDEX `follow-tags_userId_idx`(`userId`),
+    UNIQUE INDEX `follow-tags_userId_tagName_key`(`userId`, `tagName`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `follow-authors` (
+    `id` VARCHAR(191) NOT NULL,
+    `authorId` VARCHAR(191) NOT NULL,
+    `userId` VARCHAR(191) NOT NULL,
+
+    INDEX `follow-authors_userId_authorId_idx`(`userId`, `authorId`),
+    UNIQUE INDEX `follow-authors_authorId_userId_key`(`authorId`, `userId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -135,6 +162,19 @@ CREATE TABLE `question-reactions` (
     `type` ENUM('LIKE', 'DISLIKE') NOT NULL,
 
     UNIQUE INDEX `question-reactions_questionId_userId_key`(`questionId`, `userId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `comment-reactions` (
+    `id` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+    `commentId` VARCHAR(191) NOT NULL,
+    `userId` VARCHAR(191) NOT NULL,
+    `type` ENUM('LIKE', 'DISLIKE') NOT NULL,
+
+    UNIQUE INDEX `comment-reactions_commentId_userId_key`(`commentId`, `userId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -200,9 +240,6 @@ ALTER TABLE `users` ADD CONSTRAINT `users_filesId_fkey` FOREIGN KEY (`filesId`) 
 ALTER TABLE `profiles` ADD CONSTRAINT `profiles_fileId_fkey` FOREIGN KEY (`fileId`) REFERENCES `files`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `profiles` ADD CONSTRAINT `profiles_phoneId_fkey` FOREIGN KEY (`phoneId`) REFERENCES `Phone`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE `posts` ADD CONSTRAINT `posts_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -210,6 +247,12 @@ ALTER TABLE `posts` ADD CONSTRAINT `posts_articleId_fkey` FOREIGN KEY (`articleI
 
 -- AddForeignKey
 ALTER TABLE `posts` ADD CONSTRAINT `posts_questionId_fkey` FOREIGN KEY (`questionId`) REFERENCES `questions`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `posts-views` ADD CONSTRAINT `posts-views_postId_fkey` FOREIGN KEY (`postId`) REFERENCES `posts`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `posts-views` ADD CONSTRAINT `posts-views_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `posts-tags` ADD CONSTRAINT `posts-tags_postId_fkey` FOREIGN KEY (`postId`) REFERENCES `posts`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -222,6 +265,21 @@ ALTER TABLE `comments` ADD CONSTRAINT `comments_postId_fkey` FOREIGN KEY (`postI
 
 -- AddForeignKey
 ALTER TABLE `comments` ADD CONSTRAINT `comments_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `comments` ADD CONSTRAINT `comments_parentCommentId_fkey` FOREIGN KEY (`parentCommentId`) REFERENCES `comments`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `follow-tags` ADD CONSTRAINT `follow-tags_tagName_fkey` FOREIGN KEY (`tagName`) REFERENCES `tags`(`name`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `follow-tags` ADD CONSTRAINT `follow-tags_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `follow-authors` ADD CONSTRAINT `follow-authors_authorId_fkey` FOREIGN KEY (`authorId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `follow-authors` ADD CONSTRAINT `follow-authors_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `articles` ADD CONSTRAINT `articles_fileId_fkey` FOREIGN KEY (`fileId`) REFERENCES `files`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -237,6 +295,12 @@ ALTER TABLE `question-reactions` ADD CONSTRAINT `question-reactions_questionId_f
 
 -- AddForeignKey
 ALTER TABLE `question-reactions` ADD CONSTRAINT `question-reactions_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `comment-reactions` ADD CONSTRAINT `comment-reactions_commentId_fkey` FOREIGN KEY (`commentId`) REFERENCES `comments`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `comment-reactions` ADD CONSTRAINT `comment-reactions_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `post-bookmarks` ADD CONSTRAINT `post-bookmarks_postId_fkey` FOREIGN KEY (`postId`) REFERENCES `posts`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

@@ -86,6 +86,10 @@ model User {
   notificationFromUser Notification[]     @relation("NotificationFromUser")
   followedTags         FollowTags[]
   commentReactions     CommentReaction[]
+  followings           FollowAuthors[]    @relation("Followings")
+  followers            FollowAuthors[]    @relation("Followers")
+  views                PostViews[]
+  authorRequest        AuthorRequest[]
 
   @@map("users")
 }
@@ -132,9 +136,22 @@ model Post {
   comments      PostComment[]
   bookmarks     PostBookmark[]
   notifications Notification[]
+  views         PostViews[]
 
   @@index([slug])
   @@map("posts")
+}
+
+model PostViews {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    String
+
+  @@map("posts-views")
 }
 
 model PostTags {
@@ -178,6 +195,18 @@ model FollowTags {
   @@unique([userId, tagName])
   @@index([userId])
   @@map("follow-tags")
+}
+
+model FollowAuthors {
+  id       String @id @default(cuid())
+  author   User   @relation("Followings", fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  authorId String
+  user     User   @relation("Followers", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId   String
+
+  @@unique([authorId, userId])
+  @@index([userId, authorId])
+  @@map("follow-authors")
 }
 
 model Tags {
@@ -304,4 +333,22 @@ model Files {
   articles  Article[]
 
   @@map("files")
+}
+
+model AuthorRequest {
+  id        String        @id @default(cuid())
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    String
+  status    RequestStatus
+
+  @@unique([userId])
+  @@map("author-requests")
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
