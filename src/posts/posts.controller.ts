@@ -90,9 +90,13 @@ export class PostsController {
   }
 
   // get post by tag
-  @Post('tags')
-  getPostsByTag(@Body() tags: string[]) {
-    return this.postsService.getPostsByTags(tags);
+  @Get('by/tags')
+  getPostsByTag(
+    @Query('tags') tags: string[],
+    @Query('page') page: number,
+    @Query('perPage') perPage: number,
+  ) {
+    return this.postsService.getPostsByTags(tags, +page, +perPage);
   }
 
   // get post suggestions by tags

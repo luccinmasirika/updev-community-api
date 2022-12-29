@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { RequestStatus } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -43,8 +51,8 @@ export class UsersController {
   @Get(':id/feed')
   async getUserFeed(
     @Param('id') id: string,
-    @Param('page') page: number,
-    @Param('perPage') perPage: number,
+    @Query('page') page: number,
+    @Query('perPage') perPage: number,
   ) {
     return this.usersService.generateFeed(+page, +perPage, id);
   }

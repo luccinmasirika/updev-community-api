@@ -384,9 +384,14 @@ export class PostsService {
     return slug;
   }
 
-  async getPostsByTags(tags: string[]) {
-    return await this.prisma.post.findMany({
+  async getPostsByTags(tags: string[], page: number, perPage: number) {
+    const pagination = {
+      take: perPage,
+      skip: (page - 1) * perPage,
+    };
+    const posts =  await this.prisma.post.findMany({
       orderBy: [{ createdAt: 'desc' }],
+      ...pagination,
       where: {
         tags: {
           some: {
@@ -434,6 +439,14 @@ export class PostsService {
           },
         },
       },
+    });
+
+    return posts.sort((a, b) => {
+      const aTags = a.tags.map((el) => el.tag.name);
+      const bTags = b.tags.map((el) => el.tag.name);
+      const aIntersection = aTags.filter((el) => tags.includes(el)).length;
+      const bIntersection = bTags.filter((el) => tags.includes(el)).length;
+      return bIntersection - aIntersection;
     });
   }
 
