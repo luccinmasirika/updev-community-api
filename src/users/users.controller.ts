@@ -39,6 +39,16 @@ export class UsersController {
     return this.usersService.followUser(userId, authorId);
   }
 
+  // get user feed
+  @Get(':id/feed')
+  async getUserFeed(
+    @Param('id') id: string,
+    @Param('page') page: number,
+    @Param('perPage') perPage: number,
+  ) {
+    return this.usersService.generateFeed(+page, +perPage, id);
+  }
+
   // get user followers
   @Get(':id/followers')
   async getUserFollowers(@Param('id') id: string) {

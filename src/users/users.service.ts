@@ -701,10 +701,6 @@ export class UsersService {
         { question: { reactions: { _count: 'desc' } } },
       ],
     });
-    console.log(
-      '🚀 ~ file: users.service.ts:535 ~ UsersService ~ generateFeed ~ postsFromFollowings',
-      postsFromFollowings,
-    );
 
     const postsFromReactions = await this.prisma.post.findMany({
       ...pagination,
