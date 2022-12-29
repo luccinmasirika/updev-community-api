@@ -132,48 +132,6 @@ export class UsersService {
             },
           },
         },
-        followings: {
-          select: {
-            author: {
-              select: {
-                username: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                profile: {
-                  select: {
-                    avatar: {
-                      select: {
-                        url: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-        followers: {
-          select: {
-            user: {
-              select: {
-                username: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                profile: {
-                  select: {
-                    avatar: {
-                      select: {
-                        url: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
       },
     });
   }
@@ -276,19 +234,17 @@ export class UsersService {
     }
   }
 
-  // get all users followed by user
-  async getFollowedUsers(id: string) {
+  // get all user following
+  async getUserFollowings(id: string) {
     return await this.prisma.followAuthors.findMany({
       where: { userId: id },
-      include: { author: true },
     });
   }
 
-  // get all users following user
-  async getFollowingUsers(id: string) {
+  // get all user followers
+  async getUserFollowers(id: string) {
     return await this.prisma.followAuthors.findMany({
       where: { authorId: id },
-      include: { user: true },
     });
   }
 
@@ -331,6 +287,62 @@ export class UsersService {
     return views;
   }
 
+  // get weekly user's posts reactions
+  async getDailyReactionsForWeek(id: string) {
+    const year = new Date().getFullYear();
+    const month = getMonth(new Date());
+    const date = getDate(new Date());
+    const start = startOfWeek(new Date(year, month, date), {
+      weekStartsOn: 2,
+    });
+    const end = endOfWeek(new Date(year, month, date), { weekStartsOn: 2 });
+    const days = eachDayOfInterval({ start, end });
+
+    const posts = await this.prisma.post.findMany({
+      where: {
+        author: { id },
+        createdAt: {
+          gte: start,
+          lte: end,
+        },
+      },
+      include: {
+        article: {
+          include: { reactions: true },
+        },
+        question: { include: { reactions: true } },
+      },
+
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+    const reactions = days.reduce((acc, day) => {
+      const key = day.toISOString().substr(0, 10);
+      acc[key] = 0;
+      return acc;
+    }, {});
+
+    posts.forEach((post) => {
+      if (post.article) {
+        post.article.reactions.forEach((reaction) => {
+          const date = new Date(reaction.createdAt);
+          const key = date.toISOString().substr(0, 10);
+          reactions[key] += 1;
+        });
+      } else {
+        post.question.reactions.forEach((reaction) => {
+          const date = new Date(reaction.createdAt);
+          const key = date.toISOString().substr(0, 10);
+          reactions[key] += 1;
+        });
+      }
+    });
+
+    return reactions;
+  }
+
   // get monthly user views
   async getDailyViewsForMonth(id: string) {
     const start = subDays(startOfMonth(new Date()), -1);
@@ -363,6 +375,57 @@ export class UsersService {
     });
 
     return views;
+  }
+
+  // get monthly user's posts reactions
+  async getDailyReactionsForMonth(id: string) {
+    const start = subDays(startOfMonth(new Date()), -1);
+    const end = subDays(endOfMonth(new Date()), -1);
+    const days = eachDayOfInterval({ start, end });
+
+    const posts = await this.prisma.post.findMany({
+      where: {
+        author: { id },
+        createdAt: {
+          gte: start,
+          lte: end,
+        },
+      },
+      include: {
+        article: {
+          include: { reactions: true },
+        },
+        question: { include: { reactions: true } },
+      },
+
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+    const reactions = days.reduce((acc, day) => {
+      const key = day.toISOString().substr(5, 5);
+      acc[key] = 0;
+      return acc;
+    }, {});
+
+    posts.forEach((post) => {
+      if (post.article) {
+        post.article.reactions.forEach((reaction) => {
+          const date = new Date(reaction.createdAt);
+          const key = date.toISOString().substr(5, 5);
+          reactions[key] += 1;
+        });
+      } else {
+        post.question.reactions.forEach((reaction) => {
+          const date = new Date(reaction.createdAt);
+          const key = date.toISOString().substr(5, 5);
+          reactions[key] += 1;
+        });
+      }
+    });
+
+    return reactions;
   }
 
   // get monthly user views for year
@@ -399,6 +462,59 @@ export class UsersService {
     return views;
   }
 
+  // get monthly user's post reactions for year
+  async getMonthlyReactionsForYear(id: string) {
+    const start = subMonths(startOfYear(new Date()), -1);
+    const end = subMonths(endOfYear(new Date()), -1);
+    const months = eachMonthOfInterval({ start, end });
+
+    const posts = await this.prisma.post.findMany({
+      where: {
+        author: { id },
+        createdAt: {
+          gte: start,
+          lte: end,
+        },
+      },
+      include: {
+        article: {
+          include: { reactions: true },
+        },
+        question: { include: { reactions: true } },
+      },
+
+      orderBy: {
+        createdAt: 'asc',
+      },
+
+      take: 100,
+    });
+
+    const reactions = months.reduce((acc, month) => {
+      const key = month.toISOString().substr(0, 7);
+      acc[key] = 0;
+      return acc;
+    }, {});
+
+    posts.forEach((post) => {
+      if (post.article) {
+        post.article.reactions.forEach((reaction) => {
+          const date = new Date(reaction.createdAt);
+          const key = date.toISOString().substr(0, 7);
+          reactions[key] += 1;
+        });
+      } else {
+        post.question.reactions.forEach((reaction) => {
+          const date = new Date(reaction.createdAt);
+          const key = date.toISOString().substr(0, 7);
+          reactions[key] += 1;
+        });
+      }
+    });
+
+    return reactions;
+  }
+
   async requestAuthorRole(id: string) {
     const request = await this.prisma.authorRequest.findUnique({
       where: { userId: id },
@@ -424,10 +540,17 @@ export class UsersService {
     });
 
     if (request) {
+      await this.prisma.user.update({ where: { id }, data: { role: 'USER' } });
       return await this.prisma.authorRequest.delete({
         where: { userId: id },
       });
     } else {
+      if (status === 'ACCEPTED') {
+        await this.prisma.user.update({
+          where: { id },
+          data: { role: 'AUTHOR' },
+        });
+      }
       return await this.prisma.authorRequest.create({
         data: {
           user: { connect: { id } },

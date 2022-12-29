@@ -335,7 +335,7 @@ export class PostsService {
         post: {
           include: {
             author: {
-              select: {
+              include: {
                 profile: {
                   select: {
                     avatar: { select: { url: true } },

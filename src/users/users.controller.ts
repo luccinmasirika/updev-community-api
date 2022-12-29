@@ -42,13 +42,13 @@ export class UsersController {
   // get user followers
   @Get(':id/followers')
   async getUserFollowers(@Param('id') id: string) {
-    return this.usersService.getFollowedUsers(id);
+    return this.usersService.getUserFollowers(id);
   }
 
   // get user following
-  @Get(':id/following')
+  @Get(':id/followings')
   async getUserFollowing(@Param('id') id: string) {
-    return this.usersService.getFollowingUsers(id);
+    return this.usersService.getUserFollowings(id);
   }
 
   // get user weekly views
@@ -57,16 +57,34 @@ export class UsersController {
     return this.usersService.getDailyViewsForWeek(id);
   }
 
+  // get weekly reactions for user
+  @Get(':id/weekly-reactions')
+  async getWeeklyReactions(@Param('id') id: string) {
+    return this.usersService.getDailyReactionsForWeek(id);
+  }
+
   // get user monthly views
   @Get(':id/monthly-views')
   async getDailyViewsForMonth(@Param('id') id: string) {
     return this.usersService.getDailyViewsForMonth(id);
   }
 
+  // get user monthly reactions
+  @Get(':id/monthly-reactions')
+  async getMonthlyReactionsForMonth(@Param('id') id: string) {
+    return this.usersService.getDailyReactionsForMonth(id);
+  }
+
   // get user yearly views
   @Get(':id/yearly-views')
   async getMonthlyViewsForYear(@Param('id') id: string) {
     return this.usersService.getMonthlyViewsForYear(id);
+  }
+
+  // get user yearly reactions
+  @Get(':id/yearly-reactions')
+  async getMonthlyReactionsForYear(@Param('id') id: string) {
+    return this.usersService.getMonthlyReactionsForYear(id);
   }
 
   @Patch(':id')
