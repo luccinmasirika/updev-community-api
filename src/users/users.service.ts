@@ -16,13 +16,17 @@ import {
   subMonths,
   subWeeks,
 } from 'date-fns';
+import { PostsService } from '../posts/posts.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private postService: PostsService,
+  ) {}
 
   async register(createUserDto: CreateUserDto) {
     const { email, password, firstName = '', lastName = '' } = createUserDto;
@@ -604,218 +608,226 @@ export class UsersService {
   }
 
   async generateFeed(page: number, perPage: number, id: string) {
-    const pagination = {
-      take: perPage,
-      skip: (page - 1) * perPage,
-    };
+    if (id === 'undefined') {
+      return await this.postService.findAll(page, perPage);
+    } else {
+      const pagination = {
+        take: perPage,
+        skip: (page - 1) * perPage,
+      };
 
-    const author = {
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        role: true,
-        profile: { select: { avatar: { select: { url: true } } } },
-      },
-    };
-
-    const reactions = {
-      select: {
-        user: author,
-        type: true,
-      },
-    };
-
-    const includePost = {
-      include: {
-        article: {
-          select: {
-            image: { select: { url: true } },
-            reactions,
-          },
+      const author = {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          role: true,
+          profile: { select: { avatar: { select: { url: true } } } },
         },
-        author,
-        question: {
-          select: {
-            reactions,
-          },
-        },
-        tags: { select: { tag: { select: { name: true } } } },
-        _count: { select: { comments: true } },
-        bookmarks: true,
-      },
-    };
+      };
 
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-      include: {
-        followings: true,
-        followedTags: true,
-        articleReactions: {
-          select: {
-            article: { select: { posts: { select: { tags: true } } } },
-          },
+      const reactions = {
+        select: {
+          user: author,
+          type: true,
         },
-        questionReactions: {
-          include: {
-            question: { select: { posts: { select: { tags: true } } } },
-          },
-        },
-      },
-    });
+      };
 
-    const followedAuthors = user.followings.map((author) => author.id);
-    const followedTags = user.followedTags.map((tag) => {
-      return tag.tagName;
-    });
-    const tagsRelatedToReactions = [
-      ...user.articleReactions
-        .map((reaction) => reaction.article.posts[0].tags.map((tag) => tag.id))
-        .flat(),
-      ...user.questionReactions
-        .map((reaction) => reaction.question.posts[0].tags.map((tag) => tag.id))
-        .flat(),
-    ];
-
-    const postsFromFollowings = await this.prisma.post.findMany({
-      ...pagination,
-      where: {
-        OR: [
-          { author: { id: { in: followedAuthors } } },
-          {
-            tags: {
-              some: { OR: followedTags.map((name) => ({ tag: { name } })) },
+      const includePost = {
+        include: {
+          article: {
+            select: {
+              image: { select: { url: true } },
+              reactions,
             },
           },
+          author,
+          question: {
+            select: {
+              reactions,
+            },
+          },
+          tags: { select: { tag: { select: { name: true } } } },
+          _count: { select: { comments: true } },
+          bookmarks: true,
+        },
+      };
+
+      const user = await this.prisma.user.findUnique({
+        where: { id },
+        include: {
+          followings: true,
+          followedTags: true,
+          articleReactions: {
+            select: {
+              article: { select: { posts: { select: { tags: true } } } },
+            },
+          },
+          questionReactions: {
+            include: {
+              question: { select: { posts: { select: { tags: true } } } },
+            },
+          },
+        },
+      });
+
+      const followedAuthors = user?.followings.map((author) => author.id);
+      const followedTags = user?.followedTags.map((tag) => {
+        return tag.tagName;
+      });
+      const tagsRelatedToReactions = [
+        ...user?.articleReactions
+          .map((reaction) =>
+            reaction.article.posts[0].tags.map((tag) => tag.id),
+          )
+          .flat(),
+        ...user?.questionReactions
+          .map((reaction) =>
+            reaction.question.posts[0].tags.map((tag) => tag.id),
+          )
+          .flat(),
+      ];
+
+      const postsFromFollowings = await this.prisma.post.findMany({
+        ...pagination,
+        where: {
+          OR: [
+            { author: { id: { in: followedAuthors } } },
+            {
+              tags: {
+                some: { OR: followedTags.map((name) => ({ tag: { name } })) },
+              },
+            },
+          ],
+          createdAt: {
+            gte: subWeeks(new Date(), 1),
+          },
+        },
+        ...includePost,
+        orderBy: [
+          {
+            article: { reactions: { _count: 'desc' } },
+          },
+          { question: { reactions: { _count: 'desc' } } },
         ],
-        createdAt: {
-          gte: subWeeks(new Date(), 1),
+      });
+
+      const postsFromReactions = await this.prisma.post.findMany({
+        ...pagination,
+        where: {
+          tags: { some: { id: { in: tagsRelatedToReactions } } },
+          createdAt: {
+            gte: subWeeks(new Date(), 1),
+          },
         },
-      },
-      ...includePost,
-      orderBy: [
-        {
-          article: { reactions: { _count: 'desc' } },
+        ...includePost,
+        orderBy: [
+          {
+            article: { reactions: { _count: 'desc' } },
+          },
+          { question: { reactions: { _count: 'desc' } } },
+        ],
+      });
+
+      const ownPosts = await this.prisma.post.findMany({
+        ...pagination,
+        where: {
+          author: { id: id },
         },
-        { question: { reactions: { _count: 'desc' } } },
-      ],
-    });
-
-    const postsFromReactions = await this.prisma.post.findMany({
-      ...pagination,
-      where: {
-        tags: { some: { id: { in: tagsRelatedToReactions } } },
-        createdAt: {
-          gte: subWeeks(new Date(), 1),
+        ...includePost,
+        orderBy: {
+          createdAt: 'desc',
         },
-      },
-      ...includePost,
-      orderBy: [
-        {
-          article: { reactions: { _count: 'desc' } },
+      });
+
+      const newPosts = await this.prisma.post.findMany({
+        ...pagination,
+        where: {
+          createdAt: {
+            gte: subWeeks(new Date(), 1),
+          },
         },
-        { question: { reactions: { _count: 'desc' } } },
-      ],
-    });
+        ...includePost,
+        orderBy: [
+          {
+            article: { reactions: { _count: 'desc' } },
+          },
+          { question: { reactions: { _count: 'desc' } } },
+        ],
+      });
 
-    const ownPosts = await this.prisma.post.findMany({
-      ...pagination,
-      where: {
-        author: { id: id },
-      },
-      ...includePost,
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-
-    const newPosts = await this.prisma.post.findMany({
-      ...pagination,
-      where: {
-        createdAt: {
-          gte: subWeeks(new Date(), 1),
+      const trendingPosts = await this.prisma.post.findMany({
+        ...pagination,
+        where: {
+          createdAt: {
+            gte: subWeeks(new Date(), 1),
+          },
         },
-      },
-      ...includePost,
-      orderBy: [
-        {
-          article: { reactions: { _count: 'desc' } },
+        ...includePost,
+        orderBy: [
+          {
+            article: { reactions: { _count: 'desc' } },
+          },
+          { question: { reactions: { _count: 'desc' } } },
+        ],
+      });
+
+      const oldPosts = await this.prisma.post.findMany({
+        ...pagination,
+        where: {
+          createdAt: {
+            lt: subWeeks(new Date(), 1),
+          },
         },
-        { question: { reactions: { _count: 'desc' } } },
-      ],
-    });
+        ...includePost,
+        orderBy: [
+          {
+            article: { reactions: { _count: 'desc' } },
+          },
+          { question: { reactions: { _count: 'desc' } } },
+        ],
+      });
 
-    const trendingPosts = await this.prisma.post.findMany({
-      ...pagination,
-      where: {
-        createdAt: {
-          gte: subWeeks(new Date(), 1),
-        },
-      },
-      ...includePost,
-      orderBy: [
-        {
-          article: { reactions: { _count: 'desc' } },
-        },
-        { question: { reactions: { _count: 'desc' } } },
-      ],
-    });
+      const primaryFeed = postsFromFollowings.concat(
+        postsFromReactions.filter(
+          (post) => !postsFromFollowings.some((p) => p.id === post.id),
+        ),
+      );
 
-    const oldPosts = await this.prisma.post.findMany({
-      ...pagination,
-      where: {
-        createdAt: {
-          lt: subWeeks(new Date(), 1),
-        },
-      },
-      ...includePost,
-      orderBy: [
-        {
-          article: { reactions: { _count: 'desc' } },
-        },
-        { question: { reactions: { _count: 'desc' } } },
-      ],
-    });
+      const primaryFeedWithOwnPosts = primaryFeed.concat(
+        ownPosts.filter((post) => !primaryFeed.some((p) => p.id === post.id)),
+      );
 
-    const primaryFeed = postsFromFollowings.concat(
-      postsFromReactions.filter(
-        (post) => !postsFromFollowings.some((p) => p.id === post.id),
-      ),
-    );
+      const primaryFeedWithNewPosts = primaryFeedWithOwnPosts.concat(
+        newPosts.filter(
+          (post) => !primaryFeedWithOwnPosts.some((p) => p.id === post.id),
+        ),
+      );
 
-    const primaryFeedWithOwnPosts = primaryFeed.concat(
-      ownPosts.filter((post) => !primaryFeed.some((p) => p.id === post.id)),
-    );
+      const primaryFeedWithTrendingPosts = primaryFeedWithNewPosts.concat(
+        trendingPosts.filter(
+          (post) => !primaryFeedWithNewPosts.some((p) => p.id === post.id),
+        ),
+      );
 
-    const primaryFeedWithNewPosts = primaryFeedWithOwnPosts.concat(
-      newPosts.filter(
-        (post) => !primaryFeedWithOwnPosts.some((p) => p.id === post.id),
-      ),
-    );
+      const primaryFeedWithOldPosts = primaryFeedWithTrendingPosts.concat(
+        oldPosts.filter(
+          (post) => !primaryFeedWithTrendingPosts.some((p) => p.id === post.id),
+        ),
+      );
 
-    const primaryFeedWithTrendingPosts = primaryFeedWithNewPosts.concat(
-      trendingPosts.filter(
-        (post) => !primaryFeedWithNewPosts.some((p) => p.id === post.id),
-      ),
-    );
-
-    const primaryFeedWithOldPosts = primaryFeedWithTrendingPosts.concat(
-      oldPosts.filter(
-        (post) => !primaryFeedWithTrendingPosts.some((p) => p.id === post.id),
-      ),
-    );
-
-    if (primaryFeed.length > 10) {
-      return primaryFeed.slice(0, 10);
-    } else if (primaryFeedWithOwnPosts.length > 10) {
-      return primaryFeedWithOwnPosts.slice(0, 10);
-    } else if (primaryFeedWithNewPosts.length > 10) {
-      return primaryFeedWithNewPosts.slice(0, 10);
-    } else if (primaryFeedWithTrendingPosts.length > 10) {
-      return primaryFeedWithTrendingPosts.slice(0, 10);
-    } else {
-      return primaryFeedWithOldPosts.slice(0, 10);
+      if (primaryFeed.length > 10) {
+        return primaryFeed.slice(0, 10);
+      } else if (primaryFeedWithOwnPosts.length > 10) {
+        return primaryFeedWithOwnPosts.slice(0, 10);
+      } else if (primaryFeedWithNewPosts.length > 10) {
+        return primaryFeedWithNewPosts.slice(0, 10);
+      } else if (primaryFeedWithTrendingPosts.length > 10) {
+        return primaryFeedWithTrendingPosts.slice(0, 10);
+      } else {
+        return primaryFeedWithOldPosts.slice(0, 10);
+      }
     }
   }
 }

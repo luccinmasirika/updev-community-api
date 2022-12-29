@@ -137,7 +137,7 @@ export class PostsService {
 
     let filter = {
       AND: [
-        { draft: filters.status === 'draft' ? true : false },
+        { draft: filters?.status === 'draft' ? true : false },
         filters?.type && { type: filters.type },
         filters?.tagNames &&
           filters.tagNames.length > 0 && {
@@ -389,7 +389,7 @@ export class PostsService {
       take: perPage,
       skip: (page - 1) * perPage,
     };
-    const posts =  await this.prisma.post.findMany({
+    const posts = await this.prisma.post.findMany({
       orderBy: [{ createdAt: 'desc' }],
       ...pagination,
       where: {
