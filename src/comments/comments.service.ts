@@ -40,6 +40,7 @@ export class CommentsService {
       include: {
         author: { include: { profile: { include: { avatar: true } } } },
         post: true,
+        _count: true
       },
     });
 

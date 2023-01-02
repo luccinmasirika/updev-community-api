@@ -556,9 +556,9 @@ export class PostsService {
     const month = getMonth(new Date());
     const date = getDate(new Date());
     const start = startOfWeek(new Date(year, month, date), {
-      weekStartsOn: 2,
+      weekStartsOn: 1,
     });
-    const end = endOfWeek(new Date(year, month, date), { weekStartsOn: 2 });
+    const end = endOfWeek(new Date(year, month, date), { weekStartsOn: 1 });
 
     const postsOfTheWeek = await this.prisma.post.findMany({
       where: {
