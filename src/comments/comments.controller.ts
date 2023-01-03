@@ -67,4 +67,11 @@ export class CommentsController {
   ) {
     return this.commentsService.reactToPostComment(id, userId, type);
   }
+
+  // get comment reactions
+  @Get(':id/reactions')
+  getCommentReactions(@Param('id') id: string) {
+    return this.commentsService.getCommentReactions(id);
+  }
+  
 }

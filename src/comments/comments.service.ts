@@ -40,7 +40,7 @@ export class CommentsService {
       include: {
         author: { include: { profile: { include: { avatar: true } } } },
         post: true,
-        _count: true
+        _count: true,
       },
     });
 
@@ -83,6 +83,24 @@ export class CommentsService {
                     avatar: true,
                   },
                 },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  // get reactions of a comment
+  getCommentReactions(commentId: string) {
+    return this.prisma.commentReaction.findMany({
+      where: { commentId },
+      include: {
+        user: {
+          include: {
+            profile: {
+              include: {
+                avatar: true,
               },
             },
           },
@@ -244,15 +262,15 @@ export class CommentsService {
           },
         });
 
-        // this.pushNotification.create({
-        //   from: userId,
-        //   to: comment.userId,
-        //   target: comment.postId,
-        //   type,
-        // });
+        this.pushNotification.create({
+          from: userId,
+          to: comment.userId,
+          target: comment.postId,
+          type,
+        });
       }
     } else {
-      const test = await this.prisma.commentReaction.create({
+      await this.prisma.commentReaction.create({
         data: {
           type,
           user: {
@@ -268,15 +286,32 @@ export class CommentsService {
         },
       });
 
-      // this.pushNotification.create({
-      //   from: userId,
-      //   to: comment.userId,
-      //   target: comment.postId,
-      //   type,
-      // });
+      this.pushNotification.create({
+        from: userId,
+        to: comment.userId,
+        target: comment.postId,
+        type,
+      });
     }
 
-    return 'Reaction added';
+    return await this.prisma.postComment.findUnique({
+      where: { id: commentId },
+      select: {
+        reactions: {
+          include: {
+            user: {
+              include: {
+                profile: {
+                  select: {
+                    avatar: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
   populateProfile = {

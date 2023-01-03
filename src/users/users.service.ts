@@ -596,6 +596,11 @@ export class UsersService {
           where: { id },
           data: { role: 'AUTHOR' },
         });
+      } else {
+        await this.prisma.user.update({
+          where: { id },
+          data: { role: 'USER' },
+        });
       }
       return await this.prisma.authorRequest.create({
         data: {
