@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { RequestStatus } from '@prisma/client';
+import { PostType, RequestStatus } from '@prisma/client';
 import * as bycrypt from 'bcryptjs';
 import {
   eachDayOfInterval,
@@ -606,7 +606,12 @@ export class UsersService {
     }
   }
 
-  async generateFeed(page: number, perPage: number, id: string) {
+  async generateFeed(
+    page: number,
+    perPage: number,
+    id: string,
+    type: PostType,
+  ) {
     if (id === 'undefined') {
       return await this.postService.findAll(page, perPage);
     }
@@ -707,6 +712,7 @@ export class UsersService {
     const getPostsFromFollowings = this.prisma.post.findMany({
       ...pagination,
       where: {
+        ...(type && { type }),
         OR: [
           {
             author: {
@@ -737,6 +743,7 @@ export class UsersService {
     const getPostsFromReactions = this.prisma.post.findMany({
       ...pagination,
       where: {
+        ...(type && { type }),
         tags: {
           some: {
             OR: tagsRelatedToReactions.map((tagName) => ({
@@ -761,6 +768,7 @@ export class UsersService {
       ...pagination,
       where: {
         author: { id: id },
+        ...(type && { type }),
         createdAt: {
           gte: intervale,
         },
@@ -774,6 +782,7 @@ export class UsersService {
     const getNewPosts = this.prisma.post.findMany({
       ...pagination,
       where: {
+        ...(type && { type }),
         createdAt: {
           gte: intervale,
         },
@@ -790,6 +799,7 @@ export class UsersService {
     const getTrendingPosts = this.prisma.post.findMany({
       ...pagination,
       where: {
+        ...(type && { type }),
         createdAt: {
           gte: intervale,
         },
@@ -806,6 +816,7 @@ export class UsersService {
     const getOldPosts = this.prisma.post.findMany({
       ...pagination,
       where: {
+        ...(type && { type }),
         createdAt: {
           lt: intervale,
         },

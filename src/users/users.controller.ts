@@ -8,7 +8,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { RequestStatus } from '@prisma/client';
+import { PostType, RequestStatus } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
@@ -53,8 +53,9 @@ export class UsersController {
     @Param('id') id: string,
     @Query('page') page: number,
     @Query('perPage') perPage: number,
+    @Query('type') type: PostType,
   ) {
-    return this.usersService.generateFeed(+page, +perPage, id);
+    return this.usersService.generateFeed(+page, +perPage, id, type);
   }
 
   // get user followers
