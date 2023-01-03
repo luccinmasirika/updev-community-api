@@ -610,7 +610,7 @@ export class UsersService {
     page: number,
     perPage: number,
     id: string,
-    type: PostType,
+    type?: PostType,
   ) {
     if (id === 'undefined') {
       return await this.postService.findAll(page, perPage);
