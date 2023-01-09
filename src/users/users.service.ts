@@ -680,6 +680,7 @@ export class UsersService {
 
     const getReactedPosts = await this.prisma.post.findMany({
       where: {
+        draft: false,
         OR: [
           {
             question: {
@@ -717,6 +718,7 @@ export class UsersService {
     const getPostsFromFollowings = this.prisma.post.findMany({
       ...pagination,
       where: {
+        draft: false,
         ...(type && { type }),
         OR: [
           {
@@ -748,6 +750,7 @@ export class UsersService {
     const getPostsFromReactions = this.prisma.post.findMany({
       ...pagination,
       where: {
+        draft: false,
         ...(type && { type }),
         tags: {
           some: {
@@ -772,6 +775,7 @@ export class UsersService {
     const getOwnPosts = this.prisma.post.findMany({
       ...pagination,
       where: {
+        draft: false,
         author: { id: id },
         ...(type && { type }),
         createdAt: {
@@ -787,6 +791,7 @@ export class UsersService {
     const getNewPosts = this.prisma.post.findMany({
       ...pagination,
       where: {
+        draft: false,
         ...(type && { type }),
         createdAt: {
           gte: intervale,
@@ -804,6 +809,7 @@ export class UsersService {
     const getTrendingPosts = this.prisma.post.findMany({
       ...pagination,
       where: {
+        draft: false,
         ...(type && { type }),
         createdAt: {
           gte: intervale,
@@ -821,6 +827,7 @@ export class UsersService {
     const getOldPosts = this.prisma.post.findMany({
       ...pagination,
       where: {
+        draft: false,
         ...(type && { type }),
         createdAt: {
           lt: intervale,

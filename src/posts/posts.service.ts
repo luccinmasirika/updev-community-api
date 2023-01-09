@@ -393,6 +393,7 @@ export class PostsService {
       orderBy: [{ createdAt: 'desc' }],
       ...pagination,
       where: {
+        draft: false,
         tags: {
           some: {
             OR: tags.map((el) => ({
@@ -456,6 +457,7 @@ export class PostsService {
       take: 3,
       where: {
         type,
+        draft: false,
         tags: {
           some: {
             OR: tags.map((el) => ({
@@ -562,6 +564,7 @@ export class PostsService {
 
     const postsOfTheWeek = await this.prisma.post.findMany({
       where: {
+        draft: false,
         createdAt: {
           gte: start,
           lte: end,
@@ -599,6 +602,7 @@ export class PostsService {
 
   async getTopPosts() {
     const posts = await this.prisma.post.findMany({
+      where: { draft: false },
       include: {
         author: {
           include: {
@@ -859,7 +863,6 @@ export class PostsService {
     return { reactions: post.article?.reactions || post.question?.reactions };
   }
 
-  // get top authors based on the number of questions and articles reacted they have
   async getTopAuthors() {
     const users = await this.prisma.user.findMany({
       include: {
@@ -890,7 +893,6 @@ export class PostsService {
     return topAuthors;
   }
 
-  // push notification
   async pushNotifications(
     from: string,
     to: string,
