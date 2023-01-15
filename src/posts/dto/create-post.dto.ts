@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PostType } from '@prisma/client';
+import { Locale, PostType } from '@prisma/client';
 import {
   IsArray,
   IsBoolean,
@@ -21,9 +21,25 @@ export class CreatePostDto {
   @ApiProperty({
     type: String,
     format: 'string',
+    example: Locale.EN,
+  })
+  locale: Locale;
+
+  @IsString()
+  @ApiProperty({
+    type: String,
+    format: 'string',
     example: 'lorem ipsum',
   })
   content: string;
+
+  @IsOptional()
+  @ApiProperty({
+    type: String,
+    format: 'string',
+    example: 'lorem ipsum',
+  })
+  series: string;
 
   @IsString()
   @ApiProperty({

@@ -118,9 +118,34 @@ export class PostsController {
   }
 
   // get top posts
-  @Get('top/posts')
+  @Get('top/posts-sidebar')
   getTopPosts() {
     return this.postsService.getTopPosts();
+  }
+
+  @Get('top/posts-week')
+  getTopPostsOfWeek() {
+    return this.postsService.getTopPostsOfWeek();
+  }
+
+  // get top posts of the month
+  @Get('top/posts-month')
+  getTopPostsOfTheMonth() {
+    return this.postsService.getTopPostsOfMonth();
+  }
+
+  // get top posts of the year
+  @Get('top/posts-year')
+  getTopPostsOfTheYear() {
+    return this.postsService.getTopPostsOfYear();
+  }
+
+  @Get('top/posts-period')
+  getTopPostsByPeriod(
+    @Query('startDate') startDate: Date,
+    @Query('endDate') endDate: Date,
+  ) {
+    return this.postsService.getTopPostsOfPeriod(startDate, endDate);
   }
 
   // get top authors

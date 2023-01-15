@@ -106,6 +106,26 @@ export class UsersController {
     return this.usersService.getMonthlyReactionsForYear(id);
   }
 
+  // get periodically between two dates views
+  @Get(':id/views-period')
+  async getViewsPeriod(
+    @Param('id') id: string,
+    @Query('start') start: Date,
+    @Query('end') end: Date,
+  ) {
+    return this.usersService.getPeriodicalViews(id, start, end);
+  }
+
+  // get periodically between two dates reactions
+  @Get(':id/reactions-period')
+  async getReactionsPeriod(
+    @Param('id') id: string,
+    @Query('start') start: Date,
+    @Query('end') end: Date,
+  ) {
+    return this.usersService.getPeriodicalReactions(id, start, end);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.updateUser(id, updateUserDto);

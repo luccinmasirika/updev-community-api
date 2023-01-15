@@ -38,6 +38,9 @@ export class NotificationsService {
           post?.article?.image?.url
         } : '/favicon.com'`,
         title: post?.title,
+        link: `https://www.updevcommunity.com/${
+          post?.type === 'ARTICLE' ? 'articles' : 'posts'
+        }/${post?.slug}`,
         reaction: `${sender?.firstName} ${sender?.lastName} ${
           type !== 'COMMENT'
             ? 'a réagi à votre publication'
@@ -67,7 +70,7 @@ export class NotificationsService {
       },
     });
   }
-  
+
   async findAll(toUserId: string) {
     const notifications = await this.prisma.notification.findMany({
       orderBy: [{ createdAt: 'desc' }],

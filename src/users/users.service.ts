@@ -561,6 +561,108 @@ export class UsersService {
     return reactions;
   }
 
+  // get periodical between two dates user views
+  async getPeriodicalViews(id: string, start: Date, end: Date) {
+    const days = eachDayOfInterval({ start, end });
+
+    const posts = await this.prisma.postViews.findMany({
+      where: {
+        userId: id,
+        createdAt: {
+          gte: start,
+          lte: end,
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+    const views = days.reduce((acc, day) => {
+      const key = day.toISOString().substr(5, 5);
+      acc[key] = 0;
+      return acc;
+    }, {});
+
+    posts.forEach((post) => {
+      const date = new Date(post.createdAt);
+      const key = date.toISOString().substr(5, 5);
+      views[key] += 1;
+    });
+
+    return views;
+  }
+
+  // get periodical between two dates user's post reactions
+  async getPeriodicalReactions(id: string, start: Date, end: Date) {
+    const days = eachDayOfInterval({ start, end });
+
+    const posts = await this.prisma.post.findMany({
+      where: { author: { id } },
+      include: {
+        article: {
+          include: { reactions: true },
+        },
+        question: { include: { reactions: true } },
+      },
+
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+
+    const reactions = days.reduce((acc, day) => {
+      const key = day.toISOString().substr(5, 5);
+      acc[key] = 0;
+      return acc;
+
+    }, {});
+
+    posts.forEach((post) => {
+      if (post.article) {
+        post.article.reactions.forEach((reaction) => {
+          const date = new Date(reaction.createdAt);
+          const key = date.toISOString().substr(5, 5);
+          reactions[key] += 1;
+        });
+      } else {
+        post.question.reactions.forEach((reaction) => {
+          const date = new Date(reaction.createdAt);
+          const key = date.toISOString().substr(5, 5);
+          reactions[key] += 1;
+        });
+      }
+    });
+
+    return reactions;
+  }
+
+  // get percentage of views for user's posts
+  async getViewsPercentage(id: string) {
+    const posts = await this.prisma.post.findMany({
+      where: { author: { id } },
+      include: { views: true },
+    });
+
+    const totalViews = posts.reduce((acc, post) => {
+      acc += post.views.length;
+      return acc;
+    }, 0);
+
+    const viewsPercentage = posts.map((post) => {
+      const percentage = (post.views.length / totalViews) * 100;
+      return {
+        id: post.id,
+        title: post.title,
+        percentage: percentage.toFixed(2),
+      };
+    });
+
+    return viewsPercentage;
+  }
+
+
   async requestAuthorRole(id: string) {
     const request = await this.prisma.authorRequest.findUnique({
       where: { userId: id },

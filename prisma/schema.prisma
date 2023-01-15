@@ -62,6 +62,11 @@ enum NotificationType {
   USEFUL
 }
 
+enum Locale {
+  EN
+  FR
+}
+
 model User {
   id                   String             @id @default(cuid())
   createdAt            DateTime           @default(now())
@@ -90,6 +95,7 @@ model User {
   followers            FollowAuthors[]    @relation("Followers")
   views                PostViews[]
   authorRequest        AuthorRequest[]
+  series               Series[]
 
   @@map("users")
 }
@@ -123,6 +129,7 @@ model Post {
   title         String
   content       String         @db.Text
   type          PostType
+  locale        Locale         @default(FR)
   slug          String         @unique
   draft         Boolean        @default(false)
   publishedOn   DateTime       @default(now())
@@ -137,9 +144,28 @@ model Post {
   bookmarks     PostBookmark[]
   notifications Notification[]
   views         PostViews[]
+  series        Series?        @relation(fields: [seriesId], references: [id])
+  seriesId      String?
 
   @@index([slug])
   @@map("posts")
+}
+
+model Series {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  title       String
+  slug        String   @unique
+  description String?  @db.Text
+  author      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId      String
+  image       Files?   @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fileId      String?
+  posts       Post[]
+
+  @@index([slug])
+  @@map("series")
 }
 
 model PostViews {
@@ -331,6 +357,7 @@ model Files {
   users     User[]
   profiles  Profile[]
   articles  Article[]
+  Series    Series[]
 
   @@map("files")
 }
