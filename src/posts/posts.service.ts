@@ -210,8 +210,7 @@ export class PostsService {
     const series = {
       select: {
         id: true,
-        title: true,
-        slug: true,
+        module,
         posts: {
           select: {
             id: true,
@@ -219,6 +218,7 @@ export class PostsService {
             slug: true,
             createdAt: true,
             type: true,
+            content: true,
           },
         },
       },

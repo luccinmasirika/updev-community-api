@@ -112,13 +112,13 @@ export class PostsController {
   }
 
   // get top posts of the week
-  @Get('top/posts-week')
+  @Get('top/posts-sidebar')
   getTopPostsOfTheWeek() {
     return this.postsService.getTopPostsOfTheWeek();
   }
 
   // get top posts
-  @Get('top/posts-sidebar')
+  @Get('top/posts')
   getTopPosts() {
     return this.postsService.getTopPosts();
   }
