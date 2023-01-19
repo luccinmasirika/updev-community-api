@@ -10,7 +10,6 @@ import {
   PostType,
   QuestionReactionType,
 } from '@prisma/client';
-import { endOfWeek, getDate, getMonth, startOfWeek } from 'date-fns';
 import slugify from 'slugify';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -554,20 +553,11 @@ export class PostsService {
   }
 
   async getTopPostsOfTheWeek() {
-    const year = new Date().getFullYear();
-    const month = getMonth(new Date());
-    const date = getDate(new Date());
-    const start = startOfWeek(new Date(year, month, date), {
-      weekStartsOn: 1,
-    });
-    const end = endOfWeek(new Date(year, month, date), { weekStartsOn: 1 });
-
     const postsOfTheWeek = await this.prisma.post.findMany({
       where: {
         draft: false,
         createdAt: {
-          gte: start,
-          lte: end,
+          gte: new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000),
         },
       },
       include: {

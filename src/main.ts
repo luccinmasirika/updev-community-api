@@ -14,7 +14,18 @@ async function bootstrap() {
       crossOriginResourcePolicy: false,
     }),
   );
-  app.enableCors();
+  app.enableCors({
+    origin: [
+      'http://localhost:3000',
+      'https://updevcommunity.com',
+      'https://www.updevcommunity.com',
+      'https://updevcommunity.com:3017',
+      'https://www.updevcommunity.com:3017',
+      'https://updev-community.vercel.app',
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    credentials: true,
+  });
   app.useGlobalPipes(new ValidationPipe());
   app.setGlobalPrefix('api/v1');
   app.useStaticAssets(join(__dirname, '..', 'uploads'), { prefix: '/assets' });

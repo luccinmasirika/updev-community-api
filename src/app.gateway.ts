@@ -5,14 +5,20 @@ import {
   OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
+  WebSocketServer
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
-  cors: {
-    origin: '*',
-  },
+  cors: { credentials: true, methods: ['GET', 'POST'], origin: [
+    'http://localhost:3000',
+    'https://updevcommunity.com',
+    'https://www.updevcommunity.com',
+    'https://updevcommunity.com:3017',
+    'https://www.updevcommunity.com:3017',
+    'https://updev-community.vercel.app',
+  ]},
+  transports: ['polling', 'websocket'],
 })
 export class AppGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
