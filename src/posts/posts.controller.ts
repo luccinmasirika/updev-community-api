@@ -111,16 +111,14 @@ export class PostsController {
     return this.postsService.getPostsByAuthor(authorId);
   }
 
-  // get top posts of the week
-  @Get('top/posts-week')
-  getTopPostsOfTheWeek() {
-    return this.postsService.getTopPostsOfTheWeek();
-  }
-
   // get top posts
   @Get('top/posts')
-  getTopPosts() {
-    return this.postsService.getTopPosts();
+  getTopPosts(
+    @Query('limit') limit: number,
+    @Query('startDate') startDate: Date,
+    @Query('endDate') endDate: Date,
+  ) {
+    return this.postsService.getTopPosts(startDate, endDate, +limit);
   }
 
   // get top authors

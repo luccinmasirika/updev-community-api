@@ -552,47 +552,9 @@ export class PostsService {
     });
   }
 
-  async getTopPostsOfTheWeek() {
-    const postsOfTheWeek = await this.prisma.post.findMany({
-      where: {
-        draft: false,
-        createdAt: {
-          gte: new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000),
-        },
-      },
-      include: {
-        author: {
-          include: {
-            profile: {
-              include: {
-                avatar: true,
-              },
-            },
-          },
-        },
-        article: {
-          include: { image: true, reactions: { include: { user: true } } },
-        },
-        question: { include: { reactions: { include: { user: true } } } },
-      },
-    });
-
-    const topQuestionsOfTheWeek = postsOfTheWeek
-      .filter((post) => post.question)
-      .sort((a, b) => b.question.reactions.length - a.question.reactions.length)
-      .slice(0, 3);
-
-    const topArticlesOfTheWeek = postsOfTheWeek
-      .filter((post) => post.article)
-      .sort((a, b) => b.article.reactions.length - a.article.reactions.length)
-      .slice(0, 3);
-
-    return { topQuestionsOfTheWeek, topArticlesOfTheWeek };
-  }
-
-  async getTopPosts() {
+  async getTopPosts(start: Date, end: Date, limit: number) {
     const posts = await this.prisma.post.findMany({
-      where: { draft: false },
+      where: { draft: false, createdAt: { gte: start, lte: end } },
       include: {
         author: {
           include: {
@@ -621,7 +583,7 @@ export class PostsService {
               ).length,
             },
       )
-      .sort((a, b) => b.reactions - a.reactions);
+      .sort((a, b) => b.reactions - a.reactions).slice(0, limit);
 
     return topPosts;
   }
