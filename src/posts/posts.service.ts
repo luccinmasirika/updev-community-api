@@ -566,8 +566,7 @@ export class PostsService {
     const filters = {
       draft: false,
       ...(type && { type }),
-      ...(start && { createdAt: { gte: start } }),
-      ...(end && { createdAt: { lte: end } }),
+      ...(start && end && { createdAt: { gte: start, lte: end } }),
     };
 
     const posts = await this.prisma.post.findMany({

@@ -112,7 +112,7 @@ export class PostsController {
   }
 
   // get top posts
-  @Get('top/posts')
+  @Get('get/top')
   getTopPosts(
     @Query('limit') limit: number,
     @Query('startDate') startDate: Date,
