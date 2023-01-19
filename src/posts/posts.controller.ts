@@ -57,13 +57,11 @@ export class PostsController {
     );
   }
 
-  // post by slug
   @Get(':slug')
   findOne(@Param('slug') slug: string) {
     return this.postsService.getPostBySlug(slug);
   }
 
-  // get all bookmarks of a user
   @Get('bookmarks/:userId')
   getBookmarks(
     @Param('userId') userId: string,
@@ -73,7 +71,6 @@ export class PostsController {
     return this.postsService.getBookmarks(userId, +page, +perPage);
   }
 
-  // get all reactions of a post
   @Get(':id/reactions/posts')
   getReactions(@Param('id') id: string) {
     return this.postsService.getAllReactionsOfPost(id);
@@ -89,7 +86,6 @@ export class PostsController {
     return this.postsService.remove(id);
   }
 
-  // get post by tag
   @Get('by/tags')
   getPostsByTag(
     @Query('tags') tags: string[],
@@ -99,19 +95,16 @@ export class PostsController {
     return this.postsService.getPostsByTags(tags, +page, +perPage);
   }
 
-  // get post suggestions by tags
   @Post('suggestions')
   getPostsSuggestionsByTag(@Body() body: { tags: string[]; type: PostType }) {
     return this.postsService.getPostsSuggestionsByTags(body.tags, body.type);
   }
 
-  // get post by author
   @Get('author/:authorId')
   getPostsByAuthor(@Param('authorId') authorId: string) {
     return this.postsService.getPostsByAuthor(authorId);
   }
 
-  // get top posts
   @Get('get/top')
   getTopPosts(
     @Query('limit') limit: number,
@@ -127,13 +120,11 @@ export class PostsController {
     });
   }
 
-  // get top authors
   @Get('top/authors')
   getTopAuthors() {
     return this.postsService.getTopAuthors();
   }
 
-  // react to a question
   @Patch(':id/reactions/:type/:userId/question')
   addReactionToQuestion(
     @Param('id') id: string,
@@ -143,7 +134,6 @@ export class PostsController {
     return this.postsService.reactToQuestionPost(id, userId, type);
   }
 
-  // react to an article
   @Patch(':id/reactions/:type/:userId/article')
   addReactionToArticle(
     @Param('id') id: string,
@@ -153,7 +143,6 @@ export class PostsController {
     return this.postsService.reactToArticlePost(id, userId, type);
   }
 
-  // add to bookmarks
   @Patch(':id/bookmarks/:userId')
   addToBookmarks(@Param('id') id: string, @Param('userId') userId: string) {
     return this.postsService.addToBookmarks(id, userId);
