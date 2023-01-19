@@ -15,6 +15,7 @@ import {
   QuestionReactionType,
 } from '@prisma/client';
 import { CreatePostDto } from './dto/create-post.dto';
+import { CreateSeriesDto } from './dto/create-series.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostsService } from './posts.service';
 
@@ -26,6 +27,16 @@ export class PostsController {
   @Post()
   create(@Body() createPostDto: CreatePostDto) {
     return this.postsService.create(createPostDto);
+  }
+
+  @Post('series')
+  createSeries(@Body() createSeriesDto: CreateSeriesDto) {
+    return this.postsService.createSeries(createSeriesDto);
+  }
+
+  @Get('series')
+  getSeries(@Query('seriesId') seriesId: string, @Query('userId') userId: string) {
+    return this.postsService.getSeries({ seriesId, userId });
   }
 
   @Get()

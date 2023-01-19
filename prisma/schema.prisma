@@ -95,6 +95,7 @@ model User {
   followers            FollowAuthors[]    @relation("Followers")
   views                PostViews[]
   authorRequest        AuthorRequest[]
+  series               Series[]
 
   @@map("users")
 }
@@ -153,6 +154,8 @@ model Series {
   id        String        @id @default(cuid())
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    String
   posts     SeriesPosts[]
 
   @@map("series")
@@ -166,6 +169,7 @@ model SeriesPosts {
   seriesId  String
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   postId    String
+  module    Int
 
   @@map("series-posts")
 }

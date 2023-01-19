@@ -14,6 +14,7 @@ import slugify from 'slugify';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostDto } from './dto/create-post.dto';
+import { CreateSeriesDto } from './dto/create-series.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 
 @Injectable()
@@ -114,6 +115,42 @@ export class PostsService {
     return updatedPost;
   }
 
+  async createSeries(createSeriesDto: CreateSeriesDto) {
+    const { user, posts } = createSeriesDto;
+    const series = await this.prisma.series.create({
+      data: {
+        user: { connect: { id: user } },
+        posts: {
+          create: posts.map((post) => ({
+            module: post.module,
+            post: { connect: { id: post.post } },
+          })),
+        },
+      },
+      include: {
+        posts: {
+          include: {
+            post: {
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                type: true,
+                content: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            posts: true,
+          },
+        },
+      },
+    });
+    return series;
+  }
+
   async findAll(
     page: number,
     perPage: number,
@@ -198,6 +235,56 @@ export class PostsService {
         _count: { select: { comments: true } },
         bookmarks: true,
       },
+    });
+  }
+
+  async getSeries({
+    seriesId,
+    userId,
+  }: {
+    seriesId?: string;
+    userId?: string;
+  }) {
+    const populate = {
+      include: {
+        posts: {
+          include: {
+            post: {
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                type: true,
+                content: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            posts: true,
+          },
+        },
+      },
+    };
+
+    if (seriesId) {
+      return await this.prisma.series.findUnique({
+        where: { id: seriesId },
+        ...populate,
+      });
+    }
+
+    if (userId) {
+      return await this.prisma.series.findMany({
+        orderBy: [{ createdAt: 'desc' }],
+        where: { user: { id: userId } },
+        ...populate,
+      });
+    }
+
+    return await this.prisma.series.findMany({
+      ...populate,
     });
   }
 
