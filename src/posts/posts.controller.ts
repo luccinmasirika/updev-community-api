@@ -117,8 +117,14 @@ export class PostsController {
     @Query('limit') limit: number,
     @Query('startDate') startDate: Date,
     @Query('endDate') endDate: Date,
+    @Query('type') type: PostType,
   ) {
-    return this.postsService.getTopPosts(startDate, endDate, +limit);
+    return this.postsService.getTopPosts({
+      start: startDate,
+      end: endDate,
+      limit: +limit,
+      type,
+    });
   }
 
   // get top authors

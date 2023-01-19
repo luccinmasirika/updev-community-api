@@ -552,9 +552,26 @@ export class PostsService {
     });
   }
 
-  async getTopPosts(start: Date, end: Date, limit: number) {
+  async getTopPosts({
+    type,
+    start,
+    end,
+    limit,
+  }: {
+    type?: PostType;
+    start?: Date;
+    end?: Date;
+    limit?: number;
+  }) {
+    const filters = {
+      draft: false,
+      ...(type && { type }),
+      ...(start && { createdAt: { gte: start } }),
+      ...(end && { createdAt: { lte: end } }),
+    };
+
     const posts = await this.prisma.post.findMany({
-      where: { draft: false, createdAt: { gte: start, lte: end } },
+      where: { ...filters },
       include: {
         author: {
           include: {
@@ -583,7 +600,8 @@ export class PostsService {
               ).length,
             },
       )
-      .sort((a, b) => b.reactions - a.reactions).slice(0, limit);
+      .sort((a, b) => b.reactions - a.reactions)
+      .slice(0, limit);
 
     return topPosts;
   }
