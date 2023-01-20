@@ -236,7 +236,7 @@ export class PostsService {
     const series = {
       select: {
         id: true,
-        module,
+        module: true,
         posts: {
           select: {
             id: true,
