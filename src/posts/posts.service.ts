@@ -24,8 +24,7 @@ export class PostsService {
     private readonly pushNotification: NotificationsService,
   ) {}
   async create(createPostDto: CreatePostDto) {
-    const { title, content, author, tags, type, image, draft, series, locale } =
-      createPostDto;
+    const { title, content, author, tags, type, image, draft } = createPostDto;
 
     const slug = await this.createSlug(title);
     const postData = {
@@ -34,7 +33,6 @@ export class PostsService {
       content,
       type,
       draft,
-      locale,
       author: { connect: { id: author } },
       tags: {
         create: tags.map((tag) => ({
@@ -48,7 +46,6 @@ export class PostsService {
       },
       article: undefined,
       question: undefined,
-      series: undefined,
     };
     if (image) {
       postData.article = {
@@ -63,12 +60,6 @@ export class PostsService {
       };
     }
 
-    if (series) {
-      postData.series = {
-        connect: { id: series },
-      };
-    }
-
     const post = await this.prisma.post.create({
       data: postData,
     });
@@ -77,7 +68,7 @@ export class PostsService {
   }
 
   async updatePost(id: string, data: UpdatePostDto) {
-    const { title, content, tags, image, draft, series, locale } = data;
+    const { title, content, tags, image, draft } = data;
     const post = await this.prisma.post.findFirst({
       where: { id },
       include: {
@@ -92,13 +83,11 @@ export class PostsService {
     }
 
     const slug = await this.updateSlug(title, post);
-
     const updateData = {
       slug,
       title,
       content,
       draft,
-      locale,
       tags: {
         deleteMany: {},
         create: tags.map((tag) => ({
@@ -111,18 +100,10 @@ export class PostsService {
         })),
       },
       article: undefined,
-      series: undefined,
     };
-
     if (image) {
       updateData.article = {
         update: { image: { connect: { id: image } } },
-      };
-    }
-
-    if (series) {
-      updateData.series = {
-        connect: { id: series },
       };
     }
 
@@ -233,23 +214,6 @@ export class PostsService {
       },
     };
 
-    const series = {
-      select: {
-        id: true,
-        module: true,
-        posts: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            createdAt: true,
-            type: true,
-            content: true,
-          },
-        },
-      },
-    };
-
     return await this.prisma.post.findMany({
       orderBy: [{ createdAt: 'desc' }],
       ...pagination,
@@ -267,7 +231,6 @@ export class PostsService {
             reactions,
           },
         },
-        series,
         tags: { select: { tag: { select: { name: true } } } },
         _count: { select: { comments: true } },
         bookmarks: true,
