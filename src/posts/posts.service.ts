@@ -10,21 +10,11 @@ import {
   PostType,
   QuestionReactionType,
 } from '@prisma/client';
-import {
-  endOfMonth,
-  endOfWeek,
-  endOfYear,
-  getDate,
-  getMonth,
-  startOfMonth,
-  startOfWeek,
-  startOfYear,
-  subMonths,
-} from 'date-fns';
 import slugify from 'slugify';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostDto } from './dto/create-post.dto';
+import { CreateSeriesDto } from './dto/create-series.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 
 @Injectable()
@@ -144,6 +134,42 @@ export class PostsService {
     return updatedPost;
   }
 
+  async createSeries(createSeriesDto: CreateSeriesDto) {
+    const { user, posts } = createSeriesDto;
+    const series = await this.prisma.series.create({
+      data: {
+        user: { connect: { id: user } },
+        posts: {
+          create: posts.map((post) => ({
+            module: post.module,
+            post: { connect: { id: post.post } },
+          })),
+        },
+      },
+      include: {
+        posts: {
+          include: {
+            post: {
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                type: true,
+                content: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            posts: true,
+          },
+        },
+      },
+    });
+    return series;
+  }
+
   async findAll(
     page: number,
     perPage: number,
@@ -246,6 +272,56 @@ export class PostsService {
         _count: { select: { comments: true } },
         bookmarks: true,
       },
+    });
+  }
+
+  async getSeries({
+    seriesId,
+    userId,
+  }: {
+    seriesId?: string;
+    userId?: string;
+  }) {
+    const populate = {
+      include: {
+        posts: {
+          include: {
+            post: {
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                type: true,
+                content: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            posts: true,
+          },
+        },
+      },
+    };
+
+    if (seriesId) {
+      return await this.prisma.series.findUnique({
+        where: { id: seriesId },
+        ...populate,
+      });
+    }
+
+    if (userId) {
+      return await this.prisma.series.findMany({
+        orderBy: [{ createdAt: 'desc' }],
+        where: { user: { id: userId } },
+        ...populate,
+      });
+    }
+
+    return await this.prisma.series.findMany({
+      ...populate,
     });
   }
 
@@ -600,56 +676,25 @@ export class PostsService {
     });
   }
 
-  async getTopPostsOfTheWeek() {
-    const year = new Date().getFullYear();
-    const month = getMonth(new Date());
-    const date = getDate(new Date());
-    const start = startOfWeek(new Date(year, month, date), {
-      weekStartsOn: 1,
-    });
-    const end = endOfWeek(new Date(year, month, date), { weekStartsOn: 1 });
+  async getTopPosts({
+    type,
+    start,
+    end,
+    limit,
+  }: {
+    type?: PostType;
+    start?: Date;
+    end?: Date;
+    limit?: number;
+  }) {
+    const filters = {
+      draft: false,
+      ...(type && { type }),
+      ...(start && end && { createdAt: { gte: start, lte: end } }),
+    };
 
-    const postsOfTheWeek = await this.prisma.post.findMany({
-      where: {
-        draft: false,
-        createdAt: {
-          gte: start,
-          lte: end,
-        },
-      },
-      include: {
-        author: {
-          include: {
-            profile: {
-              include: {
-                avatar: true,
-              },
-            },
-          },
-        },
-        article: {
-          include: { image: true, reactions: { include: { user: true } } },
-        },
-        question: { include: { reactions: { include: { user: true } } } },
-      },
-    });
-
-    const topQuestionsOfTheWeek = postsOfTheWeek
-      .filter((post) => post.question)
-      .sort((a, b) => b.question.reactions.length - a.question.reactions.length)
-      .slice(0, 3);
-
-    const topArticlesOfTheWeek = postsOfTheWeek
-      .filter((post) => post.article)
-      .sort((a, b) => b.article.reactions.length - a.article.reactions.length)
-      .slice(0, 3);
-
-    return { topQuestionsOfTheWeek, topArticlesOfTheWeek };
-  }
-
-  async getTopPosts() {
     const posts = await this.prisma.post.findMany({
-      where: { draft: false },
+      where: { ...filters },
       include: {
         author: {
           include: {
@@ -678,171 +723,8 @@ export class PostsService {
               ).length,
             },
       )
-      .sort((a, b) => b.reactions - a.reactions).slice(0, 19);
-
-    return topPosts;
-  }
-
-  async getTopPostsOfWeek() {
-    const year = new Date().getFullYear();
-    const month = getMonth(new Date());
-    const date = getDate(new Date());
-    const start = startOfWeek(new Date(year, month, date), {
-      weekStartsOn: 1,
-    });
-    const end = endOfWeek(new Date(year, month, date), { weekStartsOn: 1 });
-
-    const posts = await this.prisma.post.findMany({
-      take: 20,
-      where: { draft: false, createdAt: { gte: start, lte: end } },
-      include: {
-        author: {
-          include: {
-            profile: {
-              include: {
-                avatar: true,
-              },
-            },
-          },
-        },
-        article: {
-          include: { image: true, reactions: { include: { user: true } } },
-        },
-        question: { include: { reactions: { include: { user: true } } } },
-      },
-    });
-
-    const topPosts = posts
-      .map((el) =>
-        el.type === 'ARTICLE'
-          ? { ...el, reactions: el.article.reactions.length }
-          : {
-              ...el,
-              reactions: el.question.reactions.filter(
-                (reaction) => reaction.type !== 'DISLIKE',
-              ).length,
-            },
-      )
-      .sort((a, b) => b.reactions - a.reactions).slice(0, 19);
-
-    return topPosts;
-  }
-
-  async getTopPostsOfMonth() {
-    const year = new Date().getFullYear();
-    const month = getMonth(new Date());
-    const date = getDate(new Date());
-    const start = startOfMonth(new Date(year, month, date));
-    const end = endOfMonth(new Date(year, month, date));
-
-    const posts = await this.prisma.post.findMany({
-      where: { draft: false, createdAt: { gte: start, lte: end } },
-      include: {
-        author: {
-          include: {
-            profile: {
-              include: {
-                avatar: true,
-              },
-            },
-          },
-        },
-        article: {
-          include: { image: true, reactions: { include: { user: true } } },
-        },
-        question: { include: { reactions: { include: { user: true } } } },
-      },
-    });
-
-    const topPosts = posts
-      .map((el) =>
-        el.type === 'ARTICLE'
-          ? { ...el, reactions: el.article.reactions.length }
-          : {
-              ...el,
-              reactions: el.question.reactions.filter(
-                (reaction) => reaction.type !== 'DISLIKE',
-              ).length,
-            },
-      )
-      .sort((a, b) => b.reactions - a.reactions).slice(0, 19);
-
-    return topPosts;
-  }
-
-  async getTopPostsOfYear() {
-    const start = subMonths(startOfYear(new Date()), 1);
-    const end = subMonths(endOfYear(new Date()), 1);
-
-    const posts = await this.prisma.post.findMany({
-      take: 20,
-      where: { draft: false, createdAt: { gte: start, lte: end } },
-      include: {
-        author: {
-          include: {
-            profile: {
-              include: {
-                avatar: true,
-              },
-            },
-          },
-        },
-        article: {
-          include: { image: true, reactions: { include: { user: true } } },
-        },
-        question: { include: { reactions: { include: { user: true } } } },
-      },
-    });
-
-    const topPosts = posts
-      .map((el) =>
-        el.type === 'ARTICLE'
-          ? { ...el, reactions: el.article.reactions.length }
-          : {
-              ...el,
-              reactions: el.question.reactions.filter(
-                (reaction) => reaction.type !== 'DISLIKE',
-              ).length,
-            },
-      )
-      .sort((a, b) => b.reactions - a.reactions).slice(0, 19);
-
-    return topPosts;
-  }
-
-  async getTopPostsOfPeriod(start: Date, end: Date) {
-    const posts = await this.prisma.post.findMany({
-      take: 20,
-      where: { draft: false, createdAt: { gte: start, lte: end } },
-      include: {
-        author: {
-          include: {
-            profile: {
-              include: {
-                avatar: true,
-              },
-            },
-          },
-        },
-        article: {
-          include: { image: true, reactions: { include: { user: true } } },
-        },
-        question: { include: { reactions: { include: { user: true } } } },
-      },
-    });
-
-    const topPosts = posts
-      .map((el) =>
-        el.type === 'ARTICLE'
-          ? { ...el, reactions: el.article.reactions.length }
-          : {
-              ...el,
-              reactions: el.question.reactions.filter(
-                (reaction) => reaction.type !== 'DISLIKE',
-              ).length,
-            },
-      )
-      .sort((a, b) => b.reactions - a.reactions).slice(0, 19);
+      .sort((a, b) => b.reactions - a.reactions)
+      .slice(0, limit);
 
     return topPosts;
   }

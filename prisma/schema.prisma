@@ -63,8 +63,8 @@ enum NotificationType {
 }
 
 enum Locale {
-  EN
   FR
+  EN
 }
 
 model User {
@@ -144,34 +144,34 @@ model Post {
   bookmarks     PostBookmark[]
   notifications Notification[]
   views         PostViews[]
-  series        PostSeries[]
+  series        SeriesPosts[]
 
   @@index([slug])
   @@map("posts")
 }
 
 model Series {
-  id        String       @id @default(cuid())
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  author    User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  id        String        @id @default(cuid())
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId    String
-  posts     PostSeries[]
+  posts     SeriesPosts[]
 
   @@map("series")
 }
 
-model PostSeries {
+model SeriesPosts {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  postId    String
   series    Series   @relation(fields: [seriesId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   seriesId  String
-  index     Int
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  postId    String
+  module    Int
 
-  @@map("posts-series")
+  @@map("series-posts")
 }
 
 model PostViews {

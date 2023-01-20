@@ -15,6 +15,7 @@ import {
   QuestionReactionType,
 } from '@prisma/client';
 import { CreatePostDto } from './dto/create-post.dto';
+import { CreateSeriesDto } from './dto/create-series.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostsService } from './posts.service';
 
@@ -26,6 +27,16 @@ export class PostsController {
   @Post()
   create(@Body() createPostDto: CreatePostDto) {
     return this.postsService.create(createPostDto);
+  }
+
+  @Post('series')
+  createSeries(@Body() createSeriesDto: CreateSeriesDto) {
+    return this.postsService.createSeries(createSeriesDto);
+  }
+
+  @Get('series')
+  getSeries(@Query('seriesId') seriesId: string, @Query('userId') userId: string) {
+    return this.postsService.getSeries({ seriesId, userId });
   }
 
   @Get()
@@ -57,13 +68,11 @@ export class PostsController {
     );
   }
 
-  // post by slug
   @Get(':slug')
   findOne(@Param('slug') slug: string) {
     return this.postsService.getPostBySlug(slug);
   }
 
-  // get all bookmarks of a user
   @Get('bookmarks/:userId')
   getBookmarks(
     @Param('userId') userId: string,
@@ -73,7 +82,6 @@ export class PostsController {
     return this.postsService.getBookmarks(userId, +page, +perPage);
   }
 
-  // get all reactions of a post
   @Get(':id/reactions/posts')
   getReactions(@Param('id') id: string) {
     return this.postsService.getAllReactionsOfPost(id);
@@ -89,7 +97,6 @@ export class PostsController {
     return this.postsService.remove(id);
   }
 
-  // get post by tag
   @Get('by/tags')
   getPostsByTag(
     @Query('tags') tags: string[],
@@ -99,62 +106,36 @@ export class PostsController {
     return this.postsService.getPostsByTags(tags, +page, +perPage);
   }
 
-  // get post suggestions by tags
   @Post('suggestions')
   getPostsSuggestionsByTag(@Body() body: { tags: string[]; type: PostType }) {
     return this.postsService.getPostsSuggestionsByTags(body.tags, body.type);
   }
 
-  // get post by author
   @Get('author/:authorId')
   getPostsByAuthor(@Param('authorId') authorId: string) {
     return this.postsService.getPostsByAuthor(authorId);
   }
 
-  // get top posts of the week
-  @Get('top/posts-sidebar')
-  getTopPostsOfTheWeek() {
-    return this.postsService.getTopPostsOfTheWeek();
-  }
-
-  // get top posts
-  @Get('top/posts')
-  getTopPosts() {
-    return this.postsService.getTopPosts();
-  }
-
-  @Get('top/posts-week')
-  getTopPostsOfWeek() {
-    return this.postsService.getTopPostsOfWeek();
-  }
-
-  // get top posts of the month
-  @Get('top/posts-month')
-  getTopPostsOfTheMonth() {
-    return this.postsService.getTopPostsOfMonth();
-  }
-
-  // get top posts of the year
-  @Get('top/posts-year')
-  getTopPostsOfTheYear() {
-    return this.postsService.getTopPostsOfYear();
-  }
-
-  @Get('top/posts-period')
-  getTopPostsByPeriod(
+  @Get('get/top')
+  getTopPosts(
+    @Query('limit') limit: number,
     @Query('startDate') startDate: Date,
     @Query('endDate') endDate: Date,
+    @Query('type') type: PostType,
   ) {
-    return this.postsService.getTopPostsOfPeriod(startDate, endDate);
+    return this.postsService.getTopPosts({
+      start: startDate,
+      end: endDate,
+      limit: +limit,
+      type,
+    });
   }
 
-  // get top authors
   @Get('top/authors')
   getTopAuthors() {
     return this.postsService.getTopAuthors();
   }
 
-  // react to a question
   @Patch(':id/reactions/:type/:userId/question')
   addReactionToQuestion(
     @Param('id') id: string,
@@ -164,7 +145,6 @@ export class PostsController {
     return this.postsService.reactToQuestionPost(id, userId, type);
   }
 
-  // react to an article
   @Patch(':id/reactions/:type/:userId/article')
   addReactionToArticle(
     @Param('id') id: string,
@@ -174,7 +154,6 @@ export class PostsController {
     return this.postsService.reactToArticlePost(id, userId, type);
   }
 
-  // add to bookmarks
   @Patch(':id/bookmarks/:userId')
   addToBookmarks(@Param('id') id: string, @Param('userId') userId: string) {
     return this.postsService.addToBookmarks(id, userId);
