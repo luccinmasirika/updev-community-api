@@ -1,14 +1,14 @@
 import {
   BadRequestException,
   Injectable,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
 import {
   ArticleReactionType,
   NotificationType,
   Post,
   PostType,
-  QuestionReactionType,
+  QuestionReactionType
 } from '@prisma/client';
 import slugify from 'slugify';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -320,6 +320,26 @@ export class PostsService {
         },
         bookmarks: true,
         _count: { select: { comments: true } },
+        series: {
+          include: {
+            series: {
+              include: {
+                posts: {
+                  include: {
+                    post: {
+                      select: {
+                        title: true,
+                        slug: true,
+                        type: true,
+                        draft: true,
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       },
     });
 

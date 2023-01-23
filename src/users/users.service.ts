@@ -291,6 +291,21 @@ export class UsersService {
   async getUserFollowers(id: string) {
     return await this.prisma.followAuthors.findMany({
       where: { authorId: id },
+      include: {
+        user: {
+          include: {
+            profile: {
+              include: {
+                avatar: {
+                  select: {
+                    url: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
   }
 
@@ -562,15 +577,18 @@ export class UsersService {
   }
 
   // get periodical between two dates user views
-  async getPeriodicalViews(id: string, start: Date, end: Date) {
-    const days = eachDayOfInterval({ start, end });
+  async getPeriodicalViews(id: string, start: any, end: any) {
+    const days = eachDayOfInterval({
+      start: new Date(start),
+      end: new Date(end),
+    });
 
-    const posts = await this.prisma.postViews.findMany({
+    const posts = await this.prisma.post.findMany({
       where: {
-        userId: id,
+        author: { id },
         createdAt: {
-          gte: start,
-          lte: end,
+          gte: new Date(start),
+          lte: new Date(end),
         },
       },
       orderBy: {
@@ -594,11 +612,20 @@ export class UsersService {
   }
 
   // get periodical between two dates user's post reactions
-  async getPeriodicalReactions(id: string, start: Date, end: Date) {
-    const days = eachDayOfInterval({ start, end });
+  async getPeriodicalReactions(id: string, start: any, end: any) {
+    const days = eachDayOfInterval({
+      start: new Date(start),
+      end: new Date(end),
+    });
 
     const posts = await this.prisma.post.findMany({
-      where: { author: { id } },
+      where: {
+        author: { id },
+        createdAt: {
+          gte: new Date(start),
+          lte: new Date(end),
+        },
+      },
       include: {
         article: {
           include: { reactions: true },
@@ -611,12 +638,10 @@ export class UsersService {
       },
     });
 
-
     const reactions = days.reduce((acc, day) => {
       const key = day.toISOString().substr(5, 5);
       acc[key] = 0;
       return acc;
-
     }, {});
 
     posts.forEach((post) => {
@@ -661,7 +686,6 @@ export class UsersService {
 
     return viewsPercentage;
   }
-
 
   async requestAuthorRole(id: string) {
     const request = await this.prisma.authorRequest.findUnique({
