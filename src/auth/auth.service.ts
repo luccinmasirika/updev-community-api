@@ -71,7 +71,7 @@ export class AuthService {
         firstName: payload.given_name,
         lastName: payload.family_name,
       });
-      return this.login(newUser);
+      return this.login({...newUser, new: true});
     }
   }
 }

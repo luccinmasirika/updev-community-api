@@ -60,12 +60,15 @@ export class UsersService {
       linkedIn,
       phone,
       twitter,
+      username: newUsername
     } = updateUserDto;
+    const username =  await this.checkUsername(newUsername)
     return this.prisma.user.update({
       where: { id },
       data: {
         firstName,
         lastName,
+        username,
         profile: {
           upsert: {
             create: {
@@ -110,7 +113,62 @@ export class UsersService {
   async findOneById(id: string) {
     return await this.prisma.user.findUnique({
       where: { id },
-      include: { profile: true },
+      include: {
+        profile: { include: { avatar: true } },
+        posts: {
+          orderBy: { createdAt: 'desc' },
+          include: { article: { include: { image: true } }, question: true },
+        },
+        authorRequest: {
+          where: {
+            user: {
+              id,
+            },
+          },
+        },
+        followings: {
+          select: {
+            author: {
+              select: {
+                username: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                profile: {
+                  select: {
+                    avatar: {
+                      select: {
+                        url: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        followers: {
+          select: {
+            user: {
+              select: {
+                username: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                profile: {
+                  select: {
+                    avatar: {
+                      select: {
+                        url: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
   }
 
@@ -806,6 +864,7 @@ export class UsersService {
 
     const getReactedPosts = await this.prisma.post.findMany({
       where: {
+        draft: false,
         OR: [
           {
             question: {
@@ -843,6 +902,7 @@ export class UsersService {
     const getPostsFromFollowings = this.prisma.post.findMany({
       ...pagination,
       where: {
+        draft: false,
         ...(type && { type }),
         OR: [
           {
@@ -874,6 +934,7 @@ export class UsersService {
     const getPostsFromReactions = this.prisma.post.findMany({
       ...pagination,
       where: {
+        draft: false,
         ...(type && { type }),
         tags: {
           some: {
@@ -898,6 +959,7 @@ export class UsersService {
     const getOwnPosts = this.prisma.post.findMany({
       ...pagination,
       where: {
+        draft: false,
         author: { id: id },
         ...(type && { type }),
         createdAt: {
@@ -913,6 +975,7 @@ export class UsersService {
     const getNewPosts = this.prisma.post.findMany({
       ...pagination,
       where: {
+        draft: false,
         ...(type && { type }),
         createdAt: {
           gte: intervale,
@@ -930,6 +993,7 @@ export class UsersService {
     const getTrendingPosts = this.prisma.post.findMany({
       ...pagination,
       where: {
+        draft: false,
         ...(type && { type }),
         createdAt: {
           gte: intervale,
@@ -947,6 +1011,7 @@ export class UsersService {
     const getOldPosts = this.prisma.post.findMany({
       ...pagination,
       where: {
+        draft: false,
         ...(type && { type }),
         createdAt: {
           lt: intervale,

@@ -1,14 +1,14 @@
 import {
   BadRequestException,
   Injectable,
-  NotFoundException
+  NotFoundException,
 } from '@nestjs/common';
 import {
   ArticleReactionType,
   NotificationType,
   Post,
   PostType,
-  QuestionReactionType
+  QuestionReactionType,
 } from '@prisma/client';
 import slugify from 'slugify';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -117,7 +117,7 @@ export class PostsService {
 
   async createSeries(createSeriesDto: CreateSeriesDto) {
     const { user, posts } = createSeriesDto;
-    const series = await this.prisma.series.create({
+    await this.prisma.series.create({
       data: {
         user: { connect: { id: user } },
         posts: {
@@ -125,6 +125,28 @@ export class PostsService {
             module: post.module,
             post: { connect: { id: post.post } },
           })),
+        },
+      },
+    });
+    return this.getSeries({ userId: user });
+  }
+
+  async updateSeries(id: string, updateSeriesDto: CreateSeriesDto) {
+    const { posts, user } = updateSeriesDto;
+
+    await this.prisma.series.update({
+      where: {
+        id,
+      },
+      data: {
+        posts: {
+          deleteMany: {},
+          createMany: {
+            data: posts.map((el) => ({
+              module: el.module,
+              postId: el.post,
+            })),
+          },
         },
       },
       include: {
@@ -148,7 +170,16 @@ export class PostsService {
         },
       },
     });
-    return series;
+
+    return this.getSeries({ userId: user });
+  }
+
+  async deleteSeries(id: string) {
+    return this.prisma.series.delete({
+      where: {
+        id,
+      },
+    });
   }
 
   async findAll(
@@ -167,8 +198,7 @@ export class PostsService {
     search?: string,
   ) {
     const pagination = {
-      take: perPage,
-      skip: (page - 1) * perPage,
+      ...(perPage && page && { take: perPage, skip: (page - 1) * perPage }),
     };
 
     let filter = {
@@ -332,14 +362,14 @@ export class PostsService {
                         slug: true,
                         type: true,
                         draft: true,
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
 
