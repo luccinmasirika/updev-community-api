@@ -71,7 +71,8 @@ export class AuthService {
         firstName: payload.given_name,
         lastName: payload.family_name,
       });
-      return this.login({...newUser, new: true});
+      const token = await this.login(newUser);
+      return { ...token, new: true };
     }
   }
 }

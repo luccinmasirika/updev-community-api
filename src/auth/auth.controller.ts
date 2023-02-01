@@ -1,10 +1,7 @@
 import {
-  BadRequestException,
-  Body,
   Controller,
   Get,
   Param,
-  Patch,
   Post,
   Request,
   UseGuards,
@@ -26,7 +23,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Request() req) {
-    return await this.authService.login(req.user);
+    return this.authService.login(req.user);
   }
 
   @Post('google/login/:token')
