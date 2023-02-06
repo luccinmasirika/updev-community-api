@@ -1,13 +1,14 @@
 import {
   BadRequestException,
   Injectable,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
 import {
   ArticleReactionType,
   NotificationType,
   Post,
   PostType,
+  QuestionReactionType
   QuestionReactionType,
   Survey,
 } from '@prisma/client';
@@ -151,7 +152,7 @@ export class PostsService {
 
   async createSeries(createSeriesDto: CreateSeriesDto) {
     const { user, posts } = createSeriesDto;
-    await this.prisma.series.create({
+    const series = await this.prisma.series.create({
       data: {
         user: { connect: { id: user } },
         posts: {
@@ -159,28 +160,6 @@ export class PostsService {
             module: post.module,
             post: { connect: { id: post.post } },
           })),
-        },
-      },
-    });
-    return this.getSeries({ userId: user });
-  }
-
-  async updateSeries(id: string, updateSeriesDto: CreateSeriesDto) {
-    const { posts, user } = updateSeriesDto;
-
-    await this.prisma.series.update({
-      where: {
-        id,
-      },
-      data: {
-        posts: {
-          deleteMany: {},
-          createMany: {
-            data: posts.map((el) => ({
-              module: el.module,
-              postId: el.post,
-            })),
-          },
         },
       },
       include: {
@@ -204,16 +183,7 @@ export class PostsService {
         },
       },
     });
-
-    return this.getSeries({ userId: user });
-  }
-
-  async deleteSeries(id: string) {
-    return this.prisma.series.delete({
-      where: {
-        id,
-      },
-    });
+    return series;
   }
 
   async findAll(
@@ -232,7 +202,8 @@ export class PostsService {
     search?: string,
   ) {
     const pagination = {
-      ...(perPage && page && { take: perPage, skip: (page - 1) * perPage }),
+      take: perPage,
+      skip: (page - 1) * perPage,
     };
 
     let filter = {
@@ -396,28 +367,14 @@ export class PostsService {
                         slug: true,
                         type: true,
                         draft: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-        survey: {
-          include: {
-            options: {
-              include: {
-                votes: {
-                  include: {
-                    user: author,
-                  },
-                },
-              },
-            },
-            question: true,
-          },
-        },
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       },
     });
 

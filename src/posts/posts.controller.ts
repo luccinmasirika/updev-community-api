@@ -34,24 +34,8 @@ export class PostsController {
     return this.postsService.createSeries(createSeriesDto);
   }
 
-  @Patch('series/:id')
-  updateSeries(
-    @Param('id') id: string,
-    @Body() updateSeriesDto: CreateSeriesDto,
-  ) {
-    return this.postsService.updateSeries(id, updateSeriesDto);
-  }
-
-  @Delete('series/:id')
-  deleteSeries(@Param('id') id: string) {
-    return this.postsService.deleteSeries(id);
-  }
-
   @Get('series')
-  getSeries(
-    @Query('seriesId') seriesId: string,
-    @Query('userId') userId: string,
-  ) {
+  getSeries(@Query('seriesId') seriesId: string, @Query('userId') userId: string) {
     return this.postsService.getSeries({ seriesId, userId });
   }
 

@@ -9,5 +9,4 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   gitHub: string;
   twitter: string;
   job: string;
-  username: string;
 }

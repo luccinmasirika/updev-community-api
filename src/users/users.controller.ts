@@ -33,11 +33,6 @@ export class UsersController {
     return this.usersService.getUserByUsername(username);
   }
 
-  @Get(':id/by/id')
-  async getUserById(@Param('id') id: string) {
-    return this.usersService.findOneById(id);
-  }
-
   @Get(':id/views')
   async getUserUserViews(@Param('id') id: string) {
     return this.usersService.getUserViews(id);

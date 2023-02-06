@@ -47,7 +47,6 @@ CREATE TABLE `posts` (
     `title` VARCHAR(191) NOT NULL,
     `content` TEXT NOT NULL,
     `type` ENUM('ARTICLE', 'QUESTION') NOT NULL,
-    `locale` ENUM('FR', 'EN') NOT NULL DEFAULT 'FR',
     `slug` VARCHAR(191) NOT NULL,
     `draft` BOOLEAN NOT NULL DEFAULT false,
     `publishedOn` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -57,28 +56,6 @@ CREATE TABLE `posts` (
 
     UNIQUE INDEX `posts_slug_key`(`slug`),
     INDEX `posts_slug_idx`(`slug`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `series` (
-    `id` VARCHAR(191) NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-    `userId` VARCHAR(191) NOT NULL,
-
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `series-posts` (
-    `id` VARCHAR(191) NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-    `seriesId` VARCHAR(191) NOT NULL,
-    `postId` VARCHAR(191) NOT NULL,
-    `module` INTEGER NOT NULL,
-
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -253,18 +230,6 @@ CREATE TABLE `files` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- CreateTable
-CREATE TABLE `author-requests` (
-    `id` VARCHAR(191) NOT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-    `userId` VARCHAR(191) NOT NULL,
-    `status` ENUM('PENDING', 'ACCEPTED', 'REJECTED') NOT NULL,
-
-    UNIQUE INDEX `author-requests_userId_key`(`userId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 -- AddForeignKey
 ALTER TABLE `users` ADD CONSTRAINT `users_profileId_fkey` FOREIGN KEY (`profileId`) REFERENCES `profiles`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
@@ -282,15 +247,6 @@ ALTER TABLE `posts` ADD CONSTRAINT `posts_articleId_fkey` FOREIGN KEY (`articleI
 
 -- AddForeignKey
 ALTER TABLE `posts` ADD CONSTRAINT `posts_questionId_fkey` FOREIGN KEY (`questionId`) REFERENCES `questions`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `series` ADD CONSTRAINT `series_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `series-posts` ADD CONSTRAINT `series-posts_seriesId_fkey` FOREIGN KEY (`seriesId`) REFERENCES `series`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `series-posts` ADD CONSTRAINT `series-posts_postId_fkey` FOREIGN KEY (`postId`) REFERENCES `posts`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `posts-views` ADD CONSTRAINT `posts-views_postId_fkey` FOREIGN KEY (`postId`) REFERENCES `posts`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -363,6 +319,3 @@ ALTER TABLE `notifications` ADD CONSTRAINT `notifications_postId_fkey` FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE `notifications` ADD CONSTRAINT `notifications_commentId_fkey` FOREIGN KEY (`commentId`) REFERENCES `comments`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `author-requests` ADD CONSTRAINT `author-requests_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
