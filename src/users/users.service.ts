@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PostType, RequestStatus } from '@prisma/client';
 import * as bycrypt from 'bcryptjs';
 import {
@@ -60,9 +60,9 @@ export class UsersService {
       linkedIn,
       phone,
       twitter,
-      username: newUsername
+      username: newUsername,
     } = updateUserDto;
-    const username =  await this.checkUsername(newUsername)
+    const username = await this.checkUsername(newUsername);
     return this.prisma.user.update({
       where: { id },
       data: {
@@ -110,7 +110,8 @@ export class UsersService {
     });
   }
 
-  async findOneById(id: string) {
+  async findOneById(id?: string) {
+    if (!id) throw new NotFoundException('User not found');
     return await this.prisma.user.findUnique({
       where: { id },
       include: {

@@ -96,6 +96,7 @@ model User {
   views                PostViews[]
   authorRequest        AuthorRequest[]
   series               Series[]
+  SurveyVote           SurveyVote[]
 
   @@map("users")
 }
@@ -145,6 +146,7 @@ model Post {
   notifications Notification[]
   views         PostViews[]
   series        SeriesPosts[]
+  survey        Survey[]
 
   @@index([slug])
   @@map("posts")
@@ -383,4 +385,46 @@ enum RequestStatus {
   PENDING
   ACCEPTED
   REJECTED
+}
+
+model Survey {
+  id         String         @id @default(cuid())
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  post       Post           @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  postId     String
+  options    SurveyOption[]
+  question   SurveyQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  questionId String
+  duration   Int
+}
+
+model SurveyQuestion {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  content   String
+  surveys   Survey[]
+}
+
+model SurveyOption {
+  id        String       @id @default(cuid())
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  survey    Survey       @relation(fields: [surveyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  surveyId  String
+  content   String
+  votes     SurveyVote[]
+}
+
+model SurveyVote {
+  id        String       @id @default(cuid())
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    String
+  option    SurveyOption @relation(fields: [optionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  optionId  String
+
+  @@unique([userId, optionId])
 }

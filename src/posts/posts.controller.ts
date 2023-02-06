@@ -123,8 +123,9 @@ export class PostsController {
   }
 
   @Post('suggestions')
-  getPostsSuggestionsByTag(@Body() body: { tags: string[]; type: PostType }) {
-    return this.postsService.getPostsSuggestionsByTags(body.tags, body.type);
+  getPostsSuggestionsByTag(@Body() body: { tags: string[]; type: PostType, postId: string }) {
+    const { tags, type, postId } = body;
+    return this.postsService.getPostsSuggestionsByTags( tags, type, postId);
   }
 
   @Get('author/:authorId')

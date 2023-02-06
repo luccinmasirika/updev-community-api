@@ -9,6 +9,7 @@ import {
   Post,
   PostType,
   QuestionReactionType,
+  Survey,
 } from '@prisma/client';
 import slugify from 'slugify';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -24,7 +25,19 @@ export class PostsService {
     private readonly pushNotification: NotificationsService,
   ) {}
   async create(createPostDto: CreatePostDto) {
-    const { title, content, author, tags, type, image, draft } = createPostDto;
+    const {
+      title,
+      content,
+      author,
+      tags,
+      type,
+      image,
+      draft,
+      survey,
+      surveyOptions,
+      surveyQuestion,
+      duration,
+    } = createPostDto;
 
     const slug = await this.createSlug(title);
     const postData = {
@@ -46,7 +59,27 @@ export class PostsService {
       },
       article: undefined,
       question: undefined,
+      survey: undefined,
     };
+
+    if (survey) {
+      postData.survey = {
+        create: {
+          duration: duration,
+          question: {
+            create: {
+              content: surveyQuestion,
+            },
+          },
+          options: {
+            create: surveyOptions.map((option) => ({
+              content: option,
+            })),
+          },
+        },
+      };
+    }
+
     if (image) {
       postData.article = {
         create: {
@@ -101,6 +134,7 @@ export class PostsService {
       },
       article: undefined,
     };
+
     if (image) {
       updateData.article = {
         update: { image: { connect: { id: image } } },
@@ -370,6 +404,20 @@ export class PostsService {
             },
           },
         },
+        survey: {
+          include: {
+            options: {
+              include: {
+                votes: {
+                  include: {
+                    user: author,
+                  },
+                },
+              },
+            },
+            question: true,
+          },
+        },
       },
     });
 
@@ -381,6 +429,30 @@ export class PostsService {
     });
 
     return post;
+  }
+
+  createVote(
+    surveyId: string,
+    optionId: string,
+    userId: string,
+  ): Promise<Survey> {
+    return this.prisma.survey.update({
+      where: { id: surveyId },
+      data: {
+        options: {
+          update: {
+            where: { id: optionId },
+            data: {
+              votes: {
+                create: {
+                  userId,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
   findOne(id: number) {
@@ -587,22 +659,47 @@ export class PostsService {
     });
   }
 
-  async getPostsSuggestionsByTags(tags: string[], type?: PostType) {
+  async getPostsSuggestionsByTags(
+    tags: string[],
+    type?: PostType,
+    postId?: string,
+  ) {
+    const filters = {
+      draft: false,
+      type,
+      id: {
+        not: postId,
+      },
+      tags: {
+        some: {
+          OR: tags.map((el) => ({
+            tag: {
+              name: el,
+            },
+          })),
+        },
+      },
+    };
+
+    const itemCount = await this.prisma.post.count({
+      where: {
+        ...filters,
+      },
+    });
+
+    const count = 3;
+    const skip = Math.max(0, Math.floor(Math.random() * itemCount) - count);
+    const randomPagination = {
+      take: count,
+      skip,
+    };
+
     return await this.prisma.post.findMany({
+      ...randomPagination,
       orderBy: [{ createdAt: 'desc' }],
       take: 3,
       where: {
-        type,
-        draft: false,
-        tags: {
-          some: {
-            OR: tags.map((el) => ({
-              tag: {
-                name: el,
-              },
-            })),
-          },
-        },
+        ...filters,
       },
 
       include: {

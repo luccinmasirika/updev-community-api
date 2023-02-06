@@ -90,4 +90,36 @@ export class CreatePostDto {
     example: true,
   })
   draft?: boolean;
+
+  @IsOptional()
+  @ApiProperty({
+    type: Boolean,
+    format: 'string',
+    example: true,
+  })
+  survey?: boolean;
+
+  @IsOptional()
+  @ApiProperty({
+    type: Array,
+    format: 'string',
+    example: true,
+  })
+  surveyOptions?: string[];
+
+  @IsOptional()
+  @ApiProperty({
+    type: String,
+    format: 'string',
+    example: true,
+  })
+  surveyQuestion?: string;
+
+  @IsOptional()
+  @ApiProperty({
+    type: Number,
+    format: 'string',
+    example: true,
+  })
+  duration?: number;
 }

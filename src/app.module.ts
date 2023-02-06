@@ -11,7 +11,7 @@ import { PostsModule } from './posts/posts.module';
 import { TagsModule } from './tags/tags.module';
 import { CommentsModule } from './comments/comments.module';
 import { NotificationsModule } from './notifications/notifications.module';
-import { AppGateway } from './app.gateway';
+// import { AppGateway } from './app.gateway';
 
 @Module({
   imports: [
@@ -37,7 +37,7 @@ import { AppGateway } from './app.gateway';
     CommentsModule,
     NotificationsModule,
   ],
-  providers: [AppGateway],
+  // providers: [AppGateway],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
