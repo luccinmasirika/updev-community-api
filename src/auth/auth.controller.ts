@@ -1,7 +1,7 @@
 import {
+  Body,
   Controller,
   Get,
-  Param,
   Post,
   Request,
   UseGuards,
@@ -26,9 +26,9 @@ export class AuthController {
     return this.authService.login(req.user);
   }
 
-  @Post('google/login/:token')
-  async loginWithGoogle(@Param('token') token: string) {
-    return await this.authService.googleLogin(token);
+  @Post('google/login')
+  async loginWithGoogle(@Body() body: { token: string }) {
+    return await this.authService.googleLogin(body?.token);
   }
 
   @UseGuards(JwtAuthGuard)

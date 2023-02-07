@@ -50,7 +50,6 @@ export class AuthService {
     };
   }
 
-  // register with google or login with google account if already registered
   async googleLogin(token: string) {
     const client = new OAuth2Client(
       process.env.GOOGLE_CLIENT_ID,
@@ -71,9 +70,8 @@ export class AuthService {
         firstName: payload.given_name,
         lastName: payload.family_name,
       });
-      return this.login(newUser);
-      const token = await this.login(newUser);
-      return { ...token, new: true };
+      const auth = await this.login(newUser);
+      return { ...auth, newUser: true };
     }
   }
 }

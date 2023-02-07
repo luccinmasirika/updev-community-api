@@ -1,17 +1,16 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module';
+import { CommentsModule } from './comments/comments.module';
 import { FilesModule } from './files/files.module';
 import { MailerModule } from './mailer/mailer.module';
-import { LoggerMiddleware } from './middleware/logger.middleware';
-import { PrismaModule } from './prisma/prisma.module';
-import { UsersModule } from './users/users.module';
-import { PostsModule } from './posts/posts.module';
-import { TagsModule } from './tags/tags.module';
-import { CommentsModule } from './comments/comments.module';
 import { NotificationsModule } from './notifications/notifications.module';
-// import { AppGateway } from './app.gateway';
+import { PostsModule } from './posts/posts.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { TagsModule } from './tags/tags.module';
+import { UsersModule } from './users/users.module';
+import { AppGateway } from './app.gateway';
 
 @Module({
   imports: [
@@ -37,10 +36,11 @@ import { NotificationsModule } from './notifications/notifications.module';
     CommentsModule,
     NotificationsModule,
   ],
-  // providers: [AppGateway],
+  providers: [AppGateway],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
-  }
-}
+// export class AppModule implements NestModule {
+//   configure(consumer: MiddlewareConsumer) {
+//     consumer.apply(LoggerMiddleware).forRoutes('*');
+//   }
+// }
+export class AppModule {}

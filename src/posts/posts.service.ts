@@ -8,7 +8,6 @@ import {
   NotificationType,
   Post,
   PostType,
-  QuestionReactionType
   QuestionReactionType,
   Survey,
 } from '@prisma/client';

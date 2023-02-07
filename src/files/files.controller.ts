@@ -1,37 +1,37 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseInterceptors,
+  Get,
+  Param,
+  Patch,
+  Post,
   UploadedFile,
-  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
-import { FilesService } from './files.service';
-import { CreateFileDto } from './dto/create-file.dto';
-import { UpdateFileDto } from './dto/update-file.dto';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
-import { customFileName } from '../utils/file-name';
+import { editFileName, fileName } from '../utils/file-name';
+import { CreateFileDto } from './dto/create-file.dto';
+import { UpdateFileDto } from './dto/update-file.dto';
+import { FastifyFileInterceptor } from './fastify-file-interceptor';
+import { FilesService } from './files.service';
 
 @ApiTags('Files')
 @Controller('files')
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
   @Post('upload')
+  @ApiConsumes('multipart/form-data')
   @UseInterceptors(
-    FileInterceptor('file', {
+    FastifyFileInterceptor('file', {
       storage: diskStorage({
         destination: './uploads',
-        filename: customFileName,
+        filename: editFileName,
       }),
+      fileFilter: fileName,
     }),
   )
-  @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
       type: 'object',
@@ -53,39 +53,6 @@ export class FilesController {
       path,
     });
   }
-
-  @Post('upload/array')
-  @UseInterceptors(
-    FilesInterceptor('files', 10, {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: customFileName,
-      }),
-    }),
-  )
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        files: {
-          type: 'array',
-          items: { type: 'string', format: 'binary' },
-        },
-      },
-    },
-  })
-  uploadFiles(@UploadedFiles() files: Array<Express.Multer.File>) {
-    const data = files.map((el) => ({
-      mime: el.mimetype,
-      name: el.originalname,
-      path: el.path,
-      url: `/${el.filename}`,
-      size: el.size,
-    }));
-    return this.filesService.multiCreate(data);
-  }
-
   @Post()
   create(@Body() createFileDto: CreateFileDto) {
     return this.filesService.create(createFileDto);
