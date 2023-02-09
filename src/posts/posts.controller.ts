@@ -56,7 +56,7 @@ export class PostsController {
   ) {
     return this.postsService.findAll(
       +page || 1,
-      +perPage || 10,
+      +perPage,
       {
         type,
         tagNames,
