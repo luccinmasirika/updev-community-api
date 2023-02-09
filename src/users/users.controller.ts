@@ -69,6 +69,11 @@ export class UsersController {
     return this.usersService.getUserFollowers(id);
   }
 
+  @Get(':id/badges')
+  async getUserBadges(@Param('id') id: string) {
+    return this.usersService.getUserGadges(id);
+  }
+
   // get user following
   @Get(':id/followings')
   async getUserFollowing(@Param('id') id: string) {

@@ -35,7 +35,10 @@ export class PostsController {
   }
 
   @Get('series')
-  getSeries(@Query('seriesId') seriesId: string, @Query('userId') userId: string) {
+  getSeries(
+    @Query('seriesId') seriesId: string,
+    @Query('userId') userId: string,
+  ) {
     return this.postsService.getSeries({ seriesId, userId });
   }
 
@@ -73,6 +76,16 @@ export class PostsController {
     return this.postsService.getPostBySlug(slug);
   }
 
+  // on vote
+  @Patch(':userId/vote')
+  async vote(
+    @Param('userId') userId: string,
+    @Body() data: { optionId: string; surveyId: string },
+  ) {
+    const { optionId, surveyId } = data;
+    return this.postsService.createVote(surveyId, optionId, userId);
+  }
+
   @Get('bookmarks/:userId')
   getBookmarks(
     @Param('userId') userId: string,
@@ -107,9 +120,11 @@ export class PostsController {
   }
 
   @Post('suggestions')
-  getPostsSuggestionsByTag(@Body() body: { tags: string[]; type: PostType, postId: string }) {
+  getPostsSuggestionsByTag(
+    @Body() body: { tags: string[]; type: PostType; postId: string },
+  ) {
     const { tags, type, postId } = body;
-    return this.postsService.getPostsSuggestionsByTags( tags, type, postId);
+    return this.postsService.getPostsSuggestionsByTags(tags, type, postId);
   }
 
   @Get('author/:authorId')

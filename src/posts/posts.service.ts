@@ -1,7 +1,7 @@
 import {
   BadRequestException,
   Injectable,
-  NotFoundException
+  NotFoundException,
 } from '@nestjs/common';
 import {
   ArticleReactionType,
@@ -268,6 +268,21 @@ export class PostsService {
         tags: { select: { tag: { select: { name: true } } } },
         _count: { select: { comments: true } },
         bookmarks: true,
+        survey: {
+          include: {
+            options: {
+              include: {
+                votes: {
+                  include: {
+                    option: true,
+                    user: author,
+                  },
+                },
+              },
+            },
+            question: true,
+          },
+        },
       },
     });
   }
@@ -366,14 +381,34 @@ export class PostsService {
                         slug: true,
                         type: true,
                         draft: true,
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        survey: {
+          where: {
+            post: {
+              slug,
+            },
+          },
+          include: {
+            options: {
+              include: {
+                votes: {
+                  include: {
+                    option: true,
+                    user: author,
+                  },
+                },
+              },
+            },
+            question: true,
+          },
+        },
       },
     });
 
@@ -392,6 +427,10 @@ export class PostsService {
     optionId: string,
     userId: string,
   ): Promise<Survey> {
+    if (!userId || !optionId || !surveyId) {
+      throw new BadRequestException('Invalid Request');
+    }
+
     return this.prisma.survey.update({
       where: { id: surveyId },
       data: {
@@ -402,6 +441,26 @@ export class PostsService {
               votes: {
                 create: {
                   userId,
+                },
+              },
+            },
+          },
+        },
+      },
+      include: {
+        question: true,
+        options: {
+          include: {
+            votes: {
+              include: {
+                user: {
+                  include: {
+                    profile: {
+                      select: {
+                        avatar: true,
+                      },
+                    },
+                  },
                 },
               },
             },

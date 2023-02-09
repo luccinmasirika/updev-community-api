@@ -868,6 +868,21 @@ export class UsersService {
         tags: { select: { tag: { select: { name: true } } } },
         _count: { select: { comments: true } },
         bookmarks: true,
+        survey: {
+          include: {
+            options: {
+              include: {
+                votes: {
+                  include: {
+                    option: true,
+                    user: author,
+                  },
+                },
+              },
+            },
+            question: true,
+          },
+        },
       },
     };
 
@@ -1100,5 +1115,86 @@ export class UsersService {
     } else {
       return primaryFeedWithOldPosts.slice(0, 10);
     }
+  }
+
+  async getUserGadges(id: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { id },
+      include: {
+        posts: true,
+        followers: true,
+        comments: true,
+        questionReactions: true,
+        articleReactions: true,
+        views: true,
+      },
+    });
+
+    return [
+      {
+        name: 'First Post',
+        description: 'Write your first post',
+        icon: 'first-post',
+        completed: user.posts.length > 0,
+      },
+      {
+        name: 'Editor',
+        description: 'Write 20 posts',
+        icon: 'editor',
+        completed: user.posts.length > 20,
+      },
+      {
+        name: 'Followers',
+        description: 'Get 10 followers',
+        icon: 'followers',
+        completed: user.followers.length > 10,
+      },
+      {
+        name: 'First Comments',
+        description: 'Write your first comment',
+        icon: 'first-comment',
+        completed: user.comments.length > 0,
+      },
+      {
+        name: 'First Reactions',
+        description: 'React to your first post',
+        icon: 'first-reaction',
+        completed:
+          user.questionReactions.length + user.articleReactions.length > 0,
+      },
+      {
+        name: 'Reactions',
+        description: 'React to 10 posts',
+        icon: 'reactions',
+        completed:
+          user.questionReactions.length + user.articleReactions.length > 10,
+      },
+      {
+        name: 'Views',
+        description: 'Get 100 views',
+        icon: 'views',
+        completed: user.views.length > 100,
+      },
+      {
+        name: 'Creator',
+        description: 'Become a creator',
+        icon: 'creator',
+        completed: user.role === 'AUTHOR',
+      },
+      {
+        name: 'Ancestor',
+        description: 'Join the community more than a month ago',
+        icon: 'ancestor',
+        completed:
+          user.createdAt <
+          new Date(new Date().setMonth(new Date().getMonth() - 1)),
+      },
+      {
+        name: 'New Member',
+        description: 'Welcome to our community!',
+        icon: 'new-member',
+        completed: true,
+      },
+    ];
   }
 }
