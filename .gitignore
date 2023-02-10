@@ -24,7 +24,7 @@ lerna-debug.log*
 /.nyc_output
 
 # files
-/uploads
+# /uploads
 
 # IDEs and editors
 /.idea
