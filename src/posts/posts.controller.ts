@@ -112,11 +112,11 @@ export class PostsController {
 
   @Get('by/tags')
   getPostsByTag(
-    @Query('tags') tags: string[],
+    @Query('tags') tags: string,
     @Query('page') page: number,
     @Query('perPage') perPage: number,
   ) {
-    return this.postsService.getPostsByTags(tags, +page, +perPage);
+    return this.postsService.getPostsByTags(tags?.split(','), +page, +perPage);
   }
 
   @Post('suggestions')

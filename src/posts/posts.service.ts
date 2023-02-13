@@ -250,7 +250,7 @@ export class PostsService {
 
     return await this.prisma.post.findMany({
       orderBy: [{ createdAt: 'desc' }],
-      ...pagination,
+      ...(page && perPage && pagination),
       where: filter,
       include: {
         article: {
