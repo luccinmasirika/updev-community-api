@@ -6,33 +6,24 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { contentParser } from 'fastify-multer';
 import { join } from 'path';
 import { AppModule } from './app.module';
-import { contentParser } from 'fastify-multer';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({ logger: true }),
   );
-  app.register(helmet, {
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: [`'self'`],
-        styleSrc: [`'self'`, `'unsafe-inline'`],
-        imgSrc: [`'self'`, 'data:', 'validator.swagger.io'],
-        scriptSrc: [`'self'`, `https: 'unsafe-inline'`],
-      },
-    },
+  await app.register(helmet, {
+    crossOriginResourcePolicy: false,
+    crossOriginEmbedderPolicy: false,
   });
-  app.register(contentParser);
+  await app.register(contentParser);
   app.enableCors({
     origin: [
       'http://localhost:3000',
       'https://updevcommunity.com',
-      'https://www.updevcommunity.com',
-      'https://updevcommunity.com:3017',
-      'https://www.updevcommunity.com:3017',
       'https://updev-community.vercel.app',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],

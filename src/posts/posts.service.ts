@@ -17,6 +17,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { CreateSeriesDto } from './dto/create-series.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { UpdateSeriesDto } from './dto/update-series.dto';
 
 @Injectable()
 export class PostsService {
@@ -151,7 +152,7 @@ export class PostsService {
 
   async createSeries(createSeriesDto: CreateSeriesDto) {
     const { user, posts } = createSeriesDto;
-    const series = await this.prisma.series.create({
+    await this.prisma.series.create({
       data: {
         user: { connect: { id: user } },
         posts: {
@@ -182,7 +183,58 @@ export class PostsService {
         },
       },
     });
-    return series;
+    return this.getSeries({ userId: user });
+  }
+
+  async updateSeries(id: string, updateSeriesDto: UpdateSeriesDto) {
+    const { posts, user } = updateSeriesDto;
+
+    await this.prisma.series.update({
+      where: {
+        id,
+      },
+      data: {
+        posts: {
+          deleteMany: {},
+          createMany: {
+            data: posts.map((el) => ({
+              module: el.module,
+              postId: el.post,
+            })),
+          },
+        },
+      },
+      include: {
+        posts: {
+          include: {
+            post: {
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                type: true,
+                content: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            posts: true,
+          },
+        },
+      },
+    });
+
+    return this.getSeries({ userId: user });
+  }
+
+  async deleteSeries(id: string) {
+    return this.prisma.series.delete({
+      where: {
+        id,
+      },
+    });
   }
 
   async findAll(

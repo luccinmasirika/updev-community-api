@@ -17,6 +17,7 @@ import {
 import { CreatePostDto } from './dto/create-post.dto';
 import { CreateSeriesDto } from './dto/create-series.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { UpdateSeriesDto } from './dto/update-series.dto';
 import { PostsService } from './posts.service';
 
 @ApiTags('Posts')
@@ -34,6 +35,16 @@ export class PostsController {
     return this.postsService.createSeries(createSeriesDto);
   }
 
+  @Patch(':id/series')
+  updateSeries(@Param('id') id: string, @Body() updateSeries: UpdateSeriesDto) {
+    return this.postsService.updateSeries(id, updateSeries);
+  }
+
+  @Delete('series/:id')
+  deleteSeries(@Param('id') id: string) {
+    return this.postsService.deleteSeries(id);
+  }
+  
   @Get('series')
   getSeries(
     @Query('seriesId') seriesId: string,
