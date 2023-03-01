@@ -840,6 +840,7 @@ export class UsersService {
         lastName: true,
         email: true,
         role: true,
+        username: true,
         profile: { select: { avatar: { select: { url: true } } } },
       },
     };

@@ -289,6 +289,7 @@ export class PostsService {
         lastName: true,
         email: true,
         role: true,
+        username: true,
         profile: { select: { avatar: { select: { url: true } } } },
       },
     };
@@ -397,6 +398,7 @@ export class PostsService {
         lastName: true,
         email: true,
         role: true,
+        username: true,
         profile: { select: { avatar: { select: { url: true } } } },
       },
     };
