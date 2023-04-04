@@ -1,15 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Locale, PostType } from '@prisma/client';
-import {
-  IsArray,
-  IsBoolean,
-  IsEnum,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class CreatePostDto {
   @IsString()
+  @IsOptional()
   @ApiProperty({
     type: String,
     format: 'string',

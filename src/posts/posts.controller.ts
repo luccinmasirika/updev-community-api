@@ -44,7 +44,7 @@ export class PostsController {
   deleteSeries(@Param('id') id: string) {
     return this.postsService.deleteSeries(id);
   }
-  
+
   @Get('series')
   getSeries(
     @Query('seriesId') seriesId: string,
@@ -184,5 +184,10 @@ export class PostsController {
   @Patch(':id/bookmarks/:userId')
   addToBookmarks(@Param('id') id: string, @Param('userId') userId: string) {
     return this.postsService.addToBookmarks(id, userId);
+  }
+
+  @Post('article')
+  createArticle(@Body() createPostDto: {}) {
+    return this.postsService.createArticle();
   }
 }

@@ -16,7 +16,7 @@ export const editFileName = (
 };
 
 export const fileName = (req: Request, file: Express.Multer.File, callback) => {
-  if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+  if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp|jfif|avif)$/)) {
     return callback(new Error('Only image files are allowed!'), false);
   }
   callback(null, true);

@@ -341,13 +341,13 @@ export class UsersService {
 
   // get all user following
   async getUserFollowings(id: string) {
-    return await this.prisma.followAuthors.findMany({
+    const followings = await this.prisma.followAuthors.findMany({
       where: {
         userId: id,
         author: { accountStatus: 'ACTIVE', role: 'AUTHOR' },
       },
       include: {
-        user: {
+        author: {
           include: {
             profile: {
               include: {
@@ -362,6 +362,10 @@ export class UsersService {
         },
       },
     });
+
+    return followings.map((following) => ({
+      user: following.author,
+    }));
   }
 
   // get all user followers
@@ -660,9 +664,9 @@ export class UsersService {
       end: new Date(end),
     });
 
-    const posts = await this.prisma.post.findMany({
+    const posts = await this.prisma.postViews.findMany({
       where: {
-        author: { id },
+        userId: id,
         createdAt: {
           gte: new Date(start),
           lte: new Date(end),
@@ -674,14 +678,14 @@ export class UsersService {
     });
 
     const views = days.reduce((acc, day) => {
-      const key = day.toISOString().substr(5, 5);
+      const key = day.toLocaleDateString();
       acc[key] = 0;
       return acc;
     }, {});
 
     posts.forEach((post) => {
       const date = new Date(post.createdAt);
-      const key = date.toISOString().substr(5, 5);
+      const key = date.toLocaleDateString();
       views[key] += 1;
     });
 
@@ -716,7 +720,7 @@ export class UsersService {
     });
 
     const reactions = days.reduce((acc, day) => {
-      const key = day.toISOString().substr(5, 5);
+      const key = day.toLocaleDateString();
       acc[key] = 0;
       return acc;
     }, {});
@@ -725,13 +729,13 @@ export class UsersService {
       if (post.article) {
         post.article.reactions.forEach((reaction) => {
           const date = new Date(reaction.createdAt);
-          const key = date.toISOString().substr(5, 5);
+          const key = date.toLocaleDateString();
           reactions[key] += 1;
         });
       } else {
         post.question.reactions.forEach((reaction) => {
           const date = new Date(reaction.createdAt);
-          const key = date.toISOString().substr(5, 5);
+          const key = date.toLocaleDateString();
           reactions[key] += 1;
         });
       }
@@ -824,9 +828,7 @@ export class UsersService {
       return await this.postService.findAll(page, perPage);
     }
 
-    const intervale = startOfWeek(new Date(), {
-      weekStartsOn: 1,
-    });
+    const intervale = startOfMonth(new Date());
 
     const pagination = {
       take: perPage,
@@ -867,7 +869,7 @@ export class UsersService {
           },
         },
         tags: { select: { tag: { select: { name: true } } } },
-        _count: { select: { comments: true } },
+        _count: { select: { comments: true, views: true } },
         bookmarks: true,
         survey: {
           include: {
@@ -967,7 +969,7 @@ export class UsersService {
     });
 
     const getPostsFromReactions = this.prisma.post.findMany({
-      ...pagination,
+      take: 5,
       where: {
         draft: false,
         ...(type && { type }),
@@ -1012,9 +1014,6 @@ export class UsersService {
       where: {
         draft: false,
         ...(type && { type }),
-        createdAt: {
-          gte: intervale,
-        },
       },
       ...includePost,
       orderBy: [

@@ -11,6 +11,7 @@ import {
   QuestionReactionType,
   Survey,
 } from '@prisma/client';
+import { nanoid } from 'nanoid';
 import slugify from 'slugify';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -40,10 +41,16 @@ export class PostsService {
       duration,
     } = createPostDto;
 
-    const slug = await this.createSlug(title);
+    if (type === 'ARTICLE') {
+    }
+
+    const postTitle = type === 'ARTICLE' ? title : nanoid(12);
+
+    const slug = await this.createSlug(postTitle);
+
     const postData = {
       slug,
-      title,
+      title: postTitle,
       content,
       type,
       draft,
@@ -81,7 +88,11 @@ export class PostsService {
       };
     }
 
-    if (image) {
+    if (type === 'ARTICLE') {
+      if (!image) {
+        throw new BadRequestException('Image is required');
+      }
+
       postData.article = {
         create: {
           image: { connect: { id: image } },
@@ -893,12 +904,12 @@ export class PostsService {
 
     const topPosts = posts
       .map((el) =>
-        el.type === 'ARTICLE'
-          ? { ...el, reactions: el.article.reactions.length }
+        el?.type === 'ARTICLE'
+          ? { ...el, reactions: el?.article?.reactions?.length }
           : {
               ...el,
-              reactions: el.question.reactions.filter(
-                (reaction) => reaction.type !== 'DISLIKE',
+              reactions: el?.question?.reactions?.filter(
+                (reaction) => reaction?.type !== 'DISLIKE',
               ).length,
             },
       )
@@ -1192,6 +1203,14 @@ export class PostsService {
             id: target,
           },
         },
+      },
+    });
+  }
+
+  async createArticle() {
+    return this.prisma.article.create({
+      data: {
+        published: true,
       },
     });
   }
