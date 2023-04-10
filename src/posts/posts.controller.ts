@@ -185,9 +185,4 @@ export class PostsController {
   addToBookmarks(@Param('id') id: string, @Param('userId') userId: string) {
     return this.postsService.addToBookmarks(id, userId);
   }
-
-  @Post('article')
-  createArticle(@Body() createPostDto: {}) {
-    return this.postsService.createArticle();
-  }
 }

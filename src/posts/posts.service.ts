@@ -113,7 +113,7 @@ export class PostsService {
   }
 
   async updatePost(id: string, data: UpdatePostDto) {
-    const { title, content, tags, image, draft } = data;
+    const { title, content, tags, image, draft, type, locale } = data;
     const post = await this.prisma.post.findFirst({
       where: { id },
       include: {
@@ -133,6 +133,8 @@ export class PostsService {
       title,
       content,
       draft,
+      type,
+      locale,
       tags: {
         deleteMany: {},
         create: tags.map((tag) => ({
@@ -330,7 +332,7 @@ export class PostsService {
           },
         },
         tags: { select: { tag: { select: { name: true } } } },
-        _count: { select: { comments: true } },
+        _count: { select: { comments: true, views: true } },
         bookmarks: true,
         survey: {
           include: {
@@ -1203,14 +1205,6 @@ export class PostsService {
             id: target,
           },
         },
-      },
-    });
-  }
-
-  async createArticle() {
-    return this.prisma.article.create({
-      data: {
-        published: true,
       },
     });
   }

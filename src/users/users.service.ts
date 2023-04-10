@@ -828,7 +828,7 @@ export class UsersService {
       return await this.postService.findAll(page, perPage);
     }
 
-    const intervale = startOfMonth(new Date());
+    const intervale = new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000);
 
     const pagination = {
       take: perPage,
@@ -969,7 +969,7 @@ export class UsersService {
     });
 
     const getPostsFromReactions = this.prisma.post.findMany({
-      take: 5,
+      ...pagination,
       where: {
         draft: false,
         ...(type && { type }),
@@ -1014,6 +1014,9 @@ export class UsersService {
       where: {
         draft: false,
         ...(type && { type }),
+        createdAt: {
+          gte: intervale,
+        },
       },
       ...includePost,
       orderBy: [
