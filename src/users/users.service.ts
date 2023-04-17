@@ -768,6 +768,12 @@ export class UsersService {
     return viewsPercentage;
   }
 
+  async getAuthorRequests() {
+    return await this.prisma.authorRequest.findMany({
+      include: { user: true },
+    });
+  }
+
   async requestAuthorRole(id: string) {
     const request = await this.prisma.authorRequest.findUnique({
       where: { userId: id },

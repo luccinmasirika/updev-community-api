@@ -39,12 +39,13 @@ export class PostsService {
       surveyOptions,
       surveyQuestion,
       duration,
+      eventDate,
     } = createPostDto;
 
     if (type === 'ARTICLE') {
     }
 
-    const postTitle = type === 'ARTICLE' ? title : nanoid(12);
+    const postTitle = type === 'QUESTION' ? nanoid(12) : title;
 
     const slug = await this.createSlug(postTitle);
 
@@ -68,6 +69,7 @@ export class PostsService {
       article: undefined,
       question: undefined,
       survey: undefined,
+      event: undefined,
     };
 
     if (survey) {
@@ -99,9 +101,15 @@ export class PostsService {
           published: true,
         },
       };
-    } else {
+    } else if (type === 'QUESTION') {
       postData.question = {
         create: { published: true },
+      };
+    } else {
+      postData.event = {
+        create: {
+          date: eventDate,
+        },
       };
     }
 
@@ -113,7 +121,8 @@ export class PostsService {
   }
 
   async updatePost(id: string, data: UpdatePostDto) {
-    const { title, content, tags, image, draft, type, locale } = data;
+    const { title, content, tags, image, draft, type, locale, eventDate } =
+      data;
     const post = await this.prisma.post.findFirst({
       where: { id },
       include: {
@@ -146,12 +155,19 @@ export class PostsService {
           },
         })),
       },
+      event: undefined,
       article: undefined,
     };
 
-    if (image) {
+    if (type === 'ARTICLE') {
       updateData.article = {
         update: { image: { connect: { id: image } } },
+      };
+    }
+
+    if (type === 'EVENT') {
+      updateData.event = {
+        update: { image: { connect: { id: image }, date: eventDate } },
       };
     }
 

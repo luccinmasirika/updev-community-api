@@ -13,6 +13,15 @@ export class CreatePostDto {
   title: string;
 
   @IsString()
+  @IsOptional()
+  @ApiProperty({
+    type: String,
+    format: 'string',
+    example: '12/12/2020',
+  })
+  eventDate: string;
+
+  @IsString()
   @ApiProperty({
     type: String,
     format: 'string',

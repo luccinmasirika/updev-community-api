@@ -162,6 +162,12 @@ export class UsersController {
     return this.usersService.respondToAuthorRequest(id, status);
   }
 
+  // get all author requests
+  @Get('author-requests')
+  async getAuthorRequests() {
+    return this.usersService.getAuthorRequests();
+  }
+
   @Patch()
   updateUserName() {
     return this.usersService.updateAllUsernames();

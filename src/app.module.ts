@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { AppGateway } from './app.gateway';
 import { AuthModule } from './auth/auth.module';
 import { CommentsModule } from './comments/comments.module';
 import { FilesModule } from './files/files.module';
@@ -10,7 +11,7 @@ import { PostsModule } from './posts/posts.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { TagsModule } from './tags/tags.module';
 import { UsersModule } from './users/users.module';
-import { AppGateway } from './app.gateway';
+import { DataManagementModule } from './data-management/data-management.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AppGateway } from './app.gateway';
     TagsModule,
     CommentsModule,
     NotificationsModule,
+    DataManagementModule,
   ],
   providers: [AppGateway],
 })
