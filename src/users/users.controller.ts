@@ -24,8 +24,8 @@ export class UsersController {
   }
 
   @Get()
-  async getUsers() {
-    return this.usersService.getUsers();
+  async getUsers(@Query('search') search: string) {
+    return this.usersService.getUsers({ search });
   }
 
   @Get(':username')

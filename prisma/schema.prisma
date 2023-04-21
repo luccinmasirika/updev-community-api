@@ -131,7 +131,7 @@ model Post {
   title         String
   content       String         @db.Text
   type          PostType
-  locale        Locale         @default(FR)
+  locale        Locale?        @default(FR)
   slug          String         @unique
   draft         Boolean        @default(false)
   publishedOn   DateTime       @default(now())
@@ -148,7 +148,7 @@ model Post {
   views         PostViews[]
   series        SeriesPosts[]
   survey        Survey[]
-  Event         Event?         @relation(fields: [eventId], references: [id])
+  event         Event?         @relation(fields: [eventId], references: [id])
   eventId       String?
 
   @@index([slug])
@@ -161,8 +161,7 @@ model Event {
   updatedAt DateTime @updatedAt
   date      DateTime
   location  String
-  image     Files?   @relation(fields: [fileId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  fileId    String?
+  link      String?
   posts     Post[]
 
   @@map("events")
@@ -381,7 +380,6 @@ model Files {
   users     User[]
   profiles  Profile[]
   articles  Article[]
-  Event     Event[]
 
   @@map("files")
 }

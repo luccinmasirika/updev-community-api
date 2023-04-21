@@ -21,6 +21,26 @@ export class CreatePostDto {
   })
   eventDate: string;
 
+  
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    type: String,
+    format: 'string',
+    example: '12/12/2020',
+  })
+  eventLocation: string;
+
+  
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    type: String,
+    format: 'string',
+    example: '12/12/2020',
+  })
+  eventLink: string;
+
   @IsString()
   @ApiProperty({
     type: String,

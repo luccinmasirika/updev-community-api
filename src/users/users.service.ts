@@ -173,8 +173,31 @@ export class UsersService {
     });
   }
 
-  async getUsers() {
+  async getUsers({ search }: { search: string }) {
+    let filter = {};
+
+    if (search) {
+      Object.assign(
+        filter,
+        {
+          OR: [
+            {
+              firstName: {
+                contains: search,
+              },
+            },
+            {
+              lastName: {
+                contains: search,
+              },
+            },
+          ],
+        },
+      );
+    }
+
     return await this.prisma.user.findMany({
+      where: { ...filter },
       include: { profile: true },
     });
   }
@@ -892,6 +915,7 @@ export class UsersService {
             question: true,
           },
         },
+        event: true,
       },
     };
 

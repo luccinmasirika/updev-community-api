@@ -40,6 +40,8 @@ export class PostsService {
       surveyQuestion,
       duration,
       eventDate,
+      eventLink,
+      eventLocation,
     } = createPostDto;
 
     if (type === 'ARTICLE') {
@@ -101,14 +103,24 @@ export class PostsService {
           published: true,
         },
       };
-    } else if (type === 'QUESTION') {
+    }
+
+    if (type === 'QUESTION') {
       postData.question = {
         create: { published: true },
       };
-    } else {
+    }
+
+    if (type === 'EVENT') {
+      postData.question = {
+        create: { published: true },
+      };
+
       postData.event = {
         create: {
           date: eventDate,
+          link: eventLink,
+          location: eventLocation,
         },
       };
     }
@@ -121,8 +133,18 @@ export class PostsService {
   }
 
   async updatePost(id: string, data: UpdatePostDto) {
-    const { title, content, tags, image, draft, type, locale, eventDate } =
-      data;
+    const {
+      title,
+      content,
+      tags,
+      image,
+      draft,
+      type,
+      locale,
+      eventDate,
+      eventLocation,
+      eventLink,
+    } = data;
     const post = await this.prisma.post.findFirst({
       where: { id },
       include: {
@@ -167,7 +189,7 @@ export class PostsService {
 
     if (type === 'EVENT') {
       updateData.event = {
-        update: { image: { connect: { id: image }, date: eventDate } },
+        update: { date: eventDate, link: eventLink, location: eventLocation },
       };
     }
 
@@ -365,6 +387,7 @@ export class PostsService {
             question: true,
           },
         },
+        event: true,
       },
     });
   }
@@ -492,6 +515,7 @@ export class PostsService {
             question: true,
           },
         },
+        event: true,
       },
     });
 
@@ -834,6 +858,7 @@ export class PostsService {
             tag: true,
           },
         },
+        event: true,
       },
     });
   }
